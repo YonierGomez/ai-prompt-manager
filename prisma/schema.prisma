@@ -1,0 +1,149 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Prompt {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  description String?
+  category    String
+  tags        String   // Stored as JSON string in SQLite
+  aiModel     String   // e.g., "GPT-5", "Claude-4", "Gemini-2.0", etc.
+  isFavorite  Boolean  @default(false)
+  isPrivate   Boolean  @default(false)
+  usageCount  Int      @default(0)
+  
+  // New advanced features
+  difficulty  String   @default("Intermedio") // Básico, Intermedio, Avanzado, Experto
+  estimatedTokens Int? // Estimated token count
+  language    String   @default("es") // Language code (es, en, fr, etc.)
+  industry    String?  // Target industry
+  templateVariables String? // JSON string of template variables
+  version     String   @default("1.0")
+  parentId    String?  // For prompt versioning
+  
+  // Performance metrics
+  avgRating   Float?   @default(0)
+  totalRatings Int     @default(0)
+  successRate Float?   @default(0) // Success rate based on user feedback
+  
+  // Meta information
+  author      String?  // Author/creator
+  source      String?  // Source URL or reference
+  license     String?  // Usage license
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  parent      Prompt?  @relation("PromptVersions", fields: [parentId], references: [id])
+  versions    Prompt[] @relation("PromptVersions")
+  executions  PromptExecution[]
+  ratings     PromptRating[]
+
+  @@map("prompts")
+}
+
+model PromptExecution {
+  id          String   @id @default(cuid())
+  promptId    String
+  input       String?  // User input/variables used
+  output      String?  // Generated output
+  model       String   // AI model used
+  tokensUsed  Int?     // Actual tokens consumed
+  executionTime Float? // Time in seconds
+  success     Boolean  @default(true)
+  feedback    String?  // User feedback
+  createdAt   DateTime @default(now())
+  
+  prompt      Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  
+  @@map("prompt_executions")
+}
+
+model PromptRating {
+  id        String   @id @default(cuid())
+  promptId  String
+  rating    Int      // 1-5 stars
+  comment   String?
+  userHash  String?  // Anonymous user identifier
+  createdAt DateTime @default(now())
+  
+  prompt    Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  
+  @@map("prompt_ratings")
+}
+
+model Template {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  structure   String   // JSON structure of the template
+  category    String
+  variables   String   // JSON array of required variables
+  example     String?  // Example usage
+  isPublic    Boolean  @default(true)
+  usageCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("templates")
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  prompts     String   // JSON array of prompt IDs
+  isPublic    Boolean  @default(false)
+  tags        String?  // JSON string
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("collections")
+}
+
+model Workflow {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  steps       String   // JSON array of workflow steps
+  category    String
+  isActive    Boolean  @default(true)
+  usageCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("workflows")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  color       String?  // Hex color for UI
+  icon        String?  // Icon name
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("categories")
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  color     String?  // Hex color for UI
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tags")
+}

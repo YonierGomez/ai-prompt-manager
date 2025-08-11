@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://ai-prompt-manager.vercel.app/sitemap.xml
+
+# Disallow admin or private paths
+Disallow: /api/
+Disallow: /_next/
+Disallow: /admin/
+
+# Allow crawling of public content
+Allow: /
+Allow: /categories/
+Allow: /templates/
+Allow: /analytics/
+Allow: /prompts/
+
+# Crawl delay (optional, 1 second)
+Crawl-delay: 1
+
+# Created by Yonier Asprilla
+# Website: https://yonier.com
+# Project: AI Prompt Manager
