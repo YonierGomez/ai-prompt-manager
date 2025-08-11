@@ -1,7 +1,18 @@
-# Usar Node.js 24 Alpine - la versión más reciente
-FROM node:24-alpine AS base
+# Multi-architecture build support
+# Soporta tanto x86_64 como ARM (arm64, armv7)
+FROM --platform=$BUILDPLATFORM node:24-alpine AS base
+
+# Declarar argumentos de build para multi-arquitectura
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+ARG TARGETOS
+ARG TARGETARCH
+
+# Mostrar información de la plataforma en build logs
+RUN echo "Building for $TARGETPLATFORM on $BUILDPLATFORM"
 
 # Instalar dependencias del sistema necesarias para Tailwind CSS v4 y Prisma
+# Compatibles con múltiples arquitecturas
 RUN apk add --no-cache \
     libc6-compat \
     ca-certificates \
@@ -9,18 +20,21 @@ RUN apk add --no-cache \
     make \
     g++ \
     openssl \
-    openssl-dev
+    openssl-dev \
+    sqlite
 
 WORKDIR /app
 
 # Instalar dependencias de producción
 FROM base AS deps
 COPY package.json package-lock.json* ./
+
+# Instalar dependencias optimizadas para la arquitectura de destino
 RUN \
   if [ -f package-lock.json ]; then \
-    npm ci --omit=dev --ignore-scripts; \
+    npm ci --omit=dev --ignore-scripts --platform=$TARGETPLATFORM; \
   else \
-    echo "Lockfile not found." && npm install --omit=dev --ignore-scripts; \
+    echo "Lockfile not found." && npm install --omit=dev --ignore-scripts --platform=$TARGETPLATFORM; \
   fi
 
 # Build de la aplicación
@@ -35,17 +49,18 @@ COPY next.config.js ./
 COPY tsconfig.json ./
 
 # Instalar todas las dependencias (incluyendo devDependencies)
+# Optimizado para la arquitectura de destino
 RUN \
   if [ -f package-lock.json ]; then \
-    npm ci --ignore-scripts; \
+    npm ci --ignore-scripts --platform=$TARGETPLATFORM; \
   else \
-    echo "Lockfile not found." && npm install --ignore-scripts; \
+    echo "Lockfile not found." && npm install --ignore-scripts --platform=$TARGETPLATFORM; \
   fi
 
 # Copiar código fuente
 COPY . .
 
-# Generar el cliente de Prisma
+# Generar el cliente de Prisma para la arquitectura específica
 RUN npx prisma generate
 
 # Variables de entorno para el build
@@ -53,16 +68,19 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
 # Construir la aplicación con Tailwind CSS v4
+# El build se optimiza automáticamente para la arquitectura de destino
 RUN npm run build
 
-# Imagen de producción
+# Imagen de producción - optimizada para múltiples arquitecturas
 FROM base AS runner
 WORKDIR /app
 
 # Instalar dependencias de runtime para Prisma
+# SQLite funciona nativamente en todas las arquitecturas
 RUN apk add --no-cache \
     openssl \
-    ca-certificates
+    ca-certificates \
+    sqlite
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
