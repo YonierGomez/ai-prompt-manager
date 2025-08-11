@@ -1,42 +1,68 @@
-# Usar una imagen base oficial de Node.js con Alpine para menor tamaño
-FROM node:20-alpine AS base
+# Usar Node.js 24 Alpine - la versión más reciente
+FROM node:24-alpine AS base
 
-# Instalar dependencias del sistema necesarias
-RUN apk add --no-cache libc6-compat
+# Instalar dependencias del sistema necesarias para Tailwind CSS v4 y Prisma
+RUN apk add --no-cache \
+    libc6-compat \
+    ca-certificates \
+    python3 \
+    make \
+    g++ \
+    openssl \
+    openssl-dev
+
 WORKDIR /app
 
-# Instalar dependencias
+# Instalar dependencias de producción
 FROM base AS deps
-# Verificar si package-lock.json existe
 COPY package.json package-lock.json* ./
 RUN \
-  if [ -f package-lock.json ]; then npm ci --omit=dev; \
-  else echo "Lockfile not found." && npm install --omit=dev; \
+  if [ -f package-lock.json ]; then \
+    npm ci --omit=dev --ignore-scripts; \
+  else \
+    echo "Lockfile not found." && npm install --omit=dev --ignore-scripts; \
   fi
 
-# Instalar dependencias de desarrollo para el build
+# Build de la aplicación
 FROM base AS builder
 WORKDIR /app
+
+# Copiar archivos de configuración
 COPY package.json package-lock.json* ./
+COPY tailwind.config.ts ./
+COPY postcss.config.js ./
+COPY next.config.js ./
+COPY tsconfig.json ./
+
+# Instalar todas las dependencias (incluyendo devDependencies)
 RUN \
-  if [ -f package-lock.json ]; then npm ci; \
-  else echo "Lockfile not found." && npm install; \
+  if [ -f package-lock.json ]; then \
+    npm ci --ignore-scripts; \
+  else \
+    echo "Lockfile not found." && npm install --ignore-scripts; \
   fi
 
+# Copiar código fuente
 COPY . .
 
 # Generar el cliente de Prisma
 RUN npx prisma generate
 
-# Configurar variables de entorno para el build
+# Variables de entorno para el build
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
 
-# Construir la aplicación
+# Construir la aplicación con Tailwind CSS v4
 RUN npm run build
 
-# Imagen de producción, copiar todos los archivos y ejecutar Next.js
+# Imagen de producción
 FROM base AS runner
 WORKDIR /app
+
+# Instalar dependencias de runtime para Prisma
+RUN apk add --no-cache \
+    openssl \
+    ca-certificates
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
