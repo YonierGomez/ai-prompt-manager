@@ -104,119 +104,118 @@ export function StorageSettings() {
 
   if (!isClient) {
     return (
-      <div className="animate-pulse">
-        <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+      <div className="animate-pulse space-y-4">
+        <div className="h-6 bg-slate-700 rounded w-1/2 mb-4"></div>
         <div className="space-y-4">
-          <div className="h-32 bg-gray-200 rounded"></div>
-          <div className="h-32 bg-gray-200 rounded"></div>
+          <div className="h-32 bg-slate-700 rounded"></div>
+          <div className="h-32 bg-slate-700 rounded"></div>
+          <div className="h-24 bg-slate-700 rounded"></div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold mb-2">Configuración de Almacenamiento</h2>
-        <p className="text-gray-600 dark:text-gray-400">
-          Configura cómo y dónde se guardan tus prompts
-        </p>
-      </div>
-
+    <div className="space-y-4 sm:space-y-6">
       {/* Modo de Almacenamiento */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database className="h-5 w-5" />
-            Modo de Almacenamiento
-          </CardTitle>
+      <Card className="border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg">
+              <Database className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-white text-base">Modo de Almacenamiento</CardTitle>
+              <p className="text-slate-400 text-sm">
+                Configura dónde se guardan tus prompts
+              </p>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4">
-            {/* Local */}
-            <div 
-              className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                storageMode === 'local' 
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-              onClick={() => handleStorageModeChange('local')}
-            >
-              <div className="flex items-start gap-3">
-                <HardDrive className="h-5 w-5 mt-1 text-blue-600" />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold">Local (Recomendado)</h3>
-                    <Badge variant="outline" className="text-xs">
+        <CardContent className="pt-0 space-y-3">
+          {/* Local */}
+          <div 
+            className={`p-4 border rounded-lg cursor-pointer transition-all ${
+              storageMode === 'local' 
+                ? 'border-purple-500 bg-purple-900/20 shadow-lg' 
+                : 'border-slate-600 hover:border-slate-500 hover:bg-slate-700/30'
+            }`}
+            onClick={() => handleStorageModeChange('local')}
+          >
+            <div className="flex items-start gap-3">
+              <HardDrive className="h-5 w-5 mt-1 text-purple-400 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                  <h3 className="font-semibold text-white text-sm sm:text-base">Local (Recomendado)</h3>
+                  <div className="flex gap-1.5 flex-wrap">
+                    <Badge variant="outline" className="text-xs bg-green-600/20 text-green-300 border-green-500/30">
                       <Shield className="h-3 w-3 mr-1" />
                       Privado
                     </Badge>
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-xs bg-blue-600/20 text-blue-300 border-blue-500/30">
                       <Smartphone className="h-3 w-3 mr-1" />
                       Independiente
                     </Badge>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Tus prompts se guardan solo en este dispositivo. Máxima privacidad y velocidad.
-                    Cada dispositivo tiene sus propios prompts.
-                  </p>
-                  <div className="mt-2 text-xs text-green-600 dark:text-green-400">
-                    ✅ Totalmente offline • ✅ Privacidad 100% • ✅ Sincronización instantánea
-                  </div>
                 </div>
-                {storageMode === 'local' && (
-                  <div className="h-4 w-4 rounded-full bg-blue-600 flex items-center justify-center">
-                    <div className="h-2 w-2 rounded-full bg-white"></div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Remote */}
-            <div 
-              className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                storageMode === 'remote' 
-                  ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' 
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-              onClick={() => handleStorageModeChange('remote')}
-            >
-              <div className="flex items-start gap-3">
-                <Cloud className="h-5 w-5 mt-1 text-purple-600" />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold">Remoto (Base de Datos)</h3>
-                    <Badge variant="outline" className="text-xs bg-yellow-100 text-yellow-800">
-                      Compartido
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Los prompts se guardan en la base de datos del servidor. 
-                    Todos los dispositivos comparten los mismos prompts.
-                  </p>
-                  <div className="mt-2 text-xs text-yellow-600 dark:text-yellow-400">
-                    ⚠️ Prompts compartidos entre todos los usuarios
-                  </div>
+                <p className="text-sm text-slate-300 leading-relaxed">
+                  Tus prompts se guardan solo en este dispositivo. Máxima privacidad y velocidad.
+                </p>
+                <div className="mt-2 text-xs text-green-400 leading-relaxed">
+                  ✅ Totalmente offline • ✅ Privacidad 100% • ✅ Rápido
                 </div>
-                {storageMode === 'remote' && (
-                  <div className="h-4 w-4 rounded-full bg-purple-600 flex items-center justify-center">
-                    <div className="h-2 w-2 rounded-full bg-white"></div>
-                  </div>
-                )}
               </div>
+              {storageMode === 'local' && (
+                <div className="h-4 w-4 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
+                  <div className="h-2 w-2 rounded-full bg-white"></div>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-            <div className="flex items-start gap-2">
-              <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+          {/* Remote */}
+          <div 
+            className={`p-4 border rounded-lg cursor-pointer transition-all ${
+              storageMode === 'remote' 
+                ? 'border-yellow-500 bg-yellow-900/20 shadow-lg' 
+                : 'border-slate-600 hover:border-slate-500 hover:bg-slate-700/30'
+            }`}
+            onClick={() => handleStorageModeChange('remote')}
+          >
+            <div className="flex items-start gap-3">
+              <Cloud className="h-5 w-5 mt-1 text-yellow-400 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                  <h3 className="font-semibold text-white text-sm sm:text-base">Remoto (Base de Datos)</h3>
+                  <Badge variant="outline" className="text-xs bg-yellow-600/20 text-yellow-300 border-yellow-500/30 w-fit">
+                    Compartido
+                  </Badge>
+                </div>
+                <p className="text-sm text-slate-300 leading-relaxed">
+                  Los prompts se guardan en el servidor. Compartido entre todos los usuarios.
+                </p>
+                <div className="mt-2 text-xs text-yellow-400">
+                  ⚠️ Prompts visibles para otros usuarios
+                </div>
+              </div>
+              {storageMode === 'remote' && (
+                <div className="h-4 w-4 rounded-full bg-yellow-600 flex items-center justify-center flex-shrink-0">
+                  <div className="h-2 w-2 rounded-full bg-white"></div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-blue-900/20 border border-blue-500/30 p-4 rounded-lg">
+            <div className="flex items-start gap-3">
+              <Info className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
               <div className="text-sm">
-                <p className="font-medium text-blue-800 dark:text-blue-200 mb-1">
+                <p className="font-medium text-blue-300 mb-2">
                   Recomendación: Usar Modo Local
                 </p>
-                <p className="text-blue-700 dark:text-blue-300">
-                  Para máxima privacidad y rendimiento, cada dispositivo debería tener sus propios prompts.
-                  Puedes usar la función de exportar/importar para transferir prompts entre dispositivos.
+                <p className="text-blue-200 leading-relaxed">
+                  Para máxima privacidad, cada dispositivo debería tener sus propios prompts.
+                  Usa exportar/importar para transferir entre dispositivos.
                 </p>
               </div>
             </div>
@@ -226,27 +225,37 @@ export function StorageSettings() {
 
       {/* Estadísticas Locales */}
       {storageMode === 'local' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Estadísticas de este Dispositivo</CardTitle>
+        <Card className="border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg">
+                <HardDrive className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-white text-base">Estadísticas de este Dispositivo</CardTitle>
+                <p className="text-slate-400 text-sm">
+                  Datos almacenados localmente
+                </p>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">{analytics.totalPrompts}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Prompts</div>
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="text-center p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+                <div className="text-xl sm:text-2xl font-bold text-blue-400">{analytics.totalPrompts}</div>
+                <div className="text-xs sm:text-sm text-slate-400">Prompts</div>
               </div>
-              <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">{analytics.totalExecutions}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Ejecuciones</div>
+              <div className="text-center p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+                <div className="text-xl sm:text-2xl font-bold text-green-400">{analytics.totalExecutions}</div>
+                <div className="text-xs sm:text-sm text-slate-400">Ejecuciones</div>
               </div>
-              <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="text-2xl font-bold text-yellow-600">{analytics.favoritePrompts}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Favoritos</div>
+              <div className="text-center p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+                <div className="text-xl sm:text-2xl font-bold text-yellow-400">{analytics.favoritePrompts}</div>
+                <div className="text-xs sm:text-sm text-slate-400">Favoritos</div>
               </div>
-              <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="text-2xl font-bold text-purple-600">{analytics.categoriesUsed.length}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Categorías</div>
+              <div className="text-center p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+                <div className="text-xl sm:text-2xl font-bold text-purple-400">{analytics.categoriesUsed.length}</div>
+                <div className="text-xs sm:text-sm text-slate-400">Categorías</div>
               </div>
             </div>
           </CardContent>
@@ -254,44 +263,56 @@ export function StorageSettings() {
       )}
 
       {/* Gestión de Datos */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Gestión de Datos</CardTitle>
+      <Card className="border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-r from-orange-600 to-red-600 rounded-lg">
+              <Database className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-white text-base">Gestión de Datos</CardTitle>
+              <p className="text-slate-400 text-sm">
+                Exportar, importar y administrar datos
+              </p>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+        <CardContent className="pt-0 space-y-4">
+          <div className="grid gap-3 sm:grid-cols-3">
             <Button
               onClick={exportData}
               variant="outline"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-slate-700/50 border-slate-600 text-white hover:bg-slate-600 h-12"
             >
               <Download className="h-4 w-4" />
-              Exportar Datos
+              <span className="text-sm">Exportar</span>
             </Button>
             
             <Button
               onClick={importData}
               variant="outline"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-slate-700/50 border-slate-600 text-white hover:bg-slate-600 h-12"
             >
               <Upload className="h-4 w-4" />
-              Importar Datos
+              <span className="text-sm">Importar</span>
             </Button>
             
             <Button
               onClick={clearAllData}
               variant="destructive"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 h-12"
             >
               <Trash2 className="h-4 w-4" />
-              Eliminar Todo
+              <span className="text-sm">Eliminar Todo</span>
             </Button>
           </div>
           
-          <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-            <p>• <strong>Exportar:</strong> Descarga un backup de todos tus prompts</p>
-            <p>• <strong>Importar:</strong> Restaura prompts desde un archivo de backup</p>
-            <p>• <strong>Eliminar:</strong> Borra todos los datos de este dispositivo</p>
+          <div className="bg-slate-700/30 border border-slate-600 p-4 rounded-lg">
+            <div className="text-sm text-slate-300 space-y-2">
+              <p><strong className="text-blue-400">Exportar:</strong> Descarga backup de todos tus prompts</p>
+              <p><strong className="text-green-400">Importar:</strong> Restaura prompts desde archivo de backup</p>
+              <p><strong className="text-red-400">Eliminar:</strong> Borra todos los datos de este dispositivo</p>
+            </div>
           </div>
         </CardContent>
       </Card>

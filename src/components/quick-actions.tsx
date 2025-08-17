@@ -10,7 +10,8 @@ import {
   Sparkles,
   FileText,
   Code,
-  BarChart3
+  BarChart3,
+  Cloud
 } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -25,20 +26,20 @@ const quickActionItems = [
     hoverColor: 'hover:bg-blue-600'
   },
   {
+    title: 'Almacenamiento',
+    description: 'Google Drive / iCloud',
+    icon: <Cloud className="h-5 w-5" />,
+    href: '/cloud-storage',
+    color: 'bg-cyan-500',
+    hoverColor: 'hover:bg-cyan-600'
+  },
+  {
     title: 'Plantillas',
     description: 'Prompts predefinidos',
     icon: <FileText className="h-5 w-5" />,
     href: '/templates',
     color: 'bg-green-500',
     hoverColor: 'hover:bg-green-600'
-  },
-  {
-    title: 'Código IA',
-    description: 'Prompts de programación',
-    icon: <Code className="h-5 w-5" />,
-    href: '/categories/programming',
-    color: 'bg-purple-500',
-    hoverColor: 'hover:bg-purple-600'
   },
   {
     title: 'Análisis',

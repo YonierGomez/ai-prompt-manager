@@ -2,36 +2,59 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { BarChart3, ArrowLeft, TrendingUp, Users, Clock, Star, Eye, Download, Calendar } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { 
+  BarChart3, 
+  TrendingUp, 
+  Users, 
+  Star, 
+  Eye, 
+  Clock,
+  ArrowLeft,
+  Download
+} from 'lucide-react'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 interface AnalyticsData {
   totalPrompts: number
   totalViews: number
-  totalUses: number
   avgRating: number
-  promptsThisMonth: number
   successRate: number
-  topCategories: Array<{ name: string; count: number; percentage: number }>
-  topModels: Array<{ name: string; count: number; percentage: number }>
-  recentActivity: Array<{ type: string; prompt: string; date: string; model?: string }>
-  popularPrompts: Array<{ id: string; title: string; views: number; uses: number; rating: number; executions: number }>
-  weeklyStats: Array<{ day: string; prompts: number; views: number }>
+  promptsThisMonth: number
   summary: {
     totalExecutions: number
-    totalRatings: number
     avgExecutionsPerPrompt: number
-    avgRatingPerPrompt: number
+    totalRatings: number
   }
+  topCategories: Array<{
+    name: string
+    count: number
+    percentage: number
+  }>
+  topModels: Array<{
+    name: string
+    count: number
+    percentage: number
+  }>
+  popularPrompts: Array<{
+    id: string
+    title: string
+    executions: number
+    rating: number
+  }>
+  recentActivity: Array<{
+    prompt: string
+    date: string
+    model?: string
+  }>
 }
 
 export default function AnalyticsPage() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('30d')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetchAnalytics()
@@ -39,49 +62,30 @@ export default function AnalyticsPage() {
 
   const fetchAnalytics = async () => {
     try {
-      setIsLoading(true)
+      setLoading(true)
       const response = await fetch(`/api/analytics?timeRange=${timeRange}`)
-      
-      if (!response.ok) {
-        throw new Error('Error al obtener analytics')
+      if (response.ok) {
+        const data = await response.json()
+        setAnalytics(data)
       }
-      
-      const data = await response.json()
-      setAnalytics(data)
     } catch (error) {
       console.error('Error fetching analytics:', error)
-      // Fallback a datos mock solo si la API falla
-      const mockData: AnalyticsData = {
-        totalPrompts: 0,
-        totalViews: 0,
-        totalUses: 0,
-        avgRating: 0,
-        promptsThisMonth: 0,
-        successRate: 0,
-        topCategories: [],
-        topModels: [],
-        recentActivity: [],
-        popularPrompts: [],
-        weeklyStats: [],
-        summary: {
-          totalExecutions: 0,
-          totalRatings: 0,
-          avgExecutionsPerPrompt: 0,
-          avgRatingPerPrompt: 0
-        }
-      }
-      setAnalytics(mockData)
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-4 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Cargando analytics...</p>
+          <BarChart3 className="h-16 w-16 mx-auto mb-4 text-purple-400 animate-pulse" />
+          <h3 className="text-xl font-semibold text-white mb-2">
+            Cargando analytics...
+          </h3>
+          <p className="text-slate-400">
+            Preparando las estadísticas
+          </p>
         </div>
       </div>
     )
@@ -89,13 +93,13 @@ export default function AnalyticsPage() {
 
   if (!analytics) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-4 flex items-center justify-center">
         <div className="text-center">
           <BarChart3 className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+          <h3 className="text-xl font-semibold text-white mb-2">
             Error al cargar analytics
           </h3>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-slate-400">
             No se pudieron cargar los datos de analytics
           </p>
         </div>
@@ -104,298 +108,311 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
+      {/* Mobile Header - Sticky */}
+      <div className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-700/50">
+        <div className="flex items-center justify-between p-4">
           <Link href="/">
-            <Button variant="ghost" size="sm" className="mb-4">
+            <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Volver al inicio
+              <span className="hidden sm:inline">Volver</span>
             </Button>
           </Link>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-full bg-orange-500 text-white">
-                  <BarChart3 className="h-6 w-6" />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    Analytics Dashboard
-                  </h1>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Métricas reales basadas en ejecuciones y valoraciones de prompts
-                  </p>
-                </div>
-              </div>
-              
-              {/* Time Range Selector */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Período:</span>
-                <select
-                  value={timeRange}
-                  onChange={(e) => setTimeRange(e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
-                >
-                  <option value="7d">Últimos 7 días</option>
-                  <option value="30d">Últimos 30 días</option>
-                  <option value="90d">Últimos 90 días</option>
-                  <option value="1y">Último año</option>
-                </select>
-              </div>
-            </div>
-            
-            {/* Analytics Legend */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">¿Qué miden estas métricas?</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-blue-800 dark:text-blue-200">
-                <div>• <strong>Ejecuciones:</strong> Veces que se ha ejecutado un prompt</div>
-                <div>• <strong>Tasa de Éxito:</strong> % de ejecuciones exitosas</div>
-                <div>• <strong>Popularidad:</strong> Basada en número de ejecuciones</div>
-                <div>• <strong>Ratings:</strong> Valoraciones de 1-5 estrellas</div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+          
+          <div className="flex-1 mx-4">
+            <h1 className="text-lg font-bold text-white truncate">Análisis</h1>
+            <p className="text-xs text-slate-400 truncate">
+              Estadísticas y métricas
+            </p>
+          </div>
 
-        {/* Main Stats */}
+          <select
+            value={timeRange}
+            onChange={(e) => setTimeRange(e.target.value)}
+            className="text-xs px-2 py-1 rounded bg-slate-800 border border-slate-600 text-white"
+          >
+            <option value="7d">7d</option>
+            <option value="30d">30d</option>
+            <option value="90d">90d</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="p-4 space-y-4">
+        {/* Info Banner */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
         >
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Prompts</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{analytics.totalPrompts}</div>
-              <p className="text-xs text-muted-foreground">
-                +{analytics.promptsThisMonth} este mes
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Ejecuciones Totales</CardTitle>
-              <Eye className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{analytics.totalViews.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">
-                {analytics.summary.avgExecutionsPerPrompt} ejecuciones por prompt
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Tasa de Éxito</CardTitle>
-              <Download className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{analytics.successRate}%</div>
-              <p className="text-xs text-muted-foreground">
-                Basado en {analytics.summary.totalExecutions} ejecuciones
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Rating Promedio</CardTitle>
-              <Star className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{analytics.avgRating}/5</div>
-              <p className="text-xs text-muted-foreground">
-                {analytics.summary.totalRatings} valoraciones totales
-              </p>
+          <Card className="border-blue-500/30 bg-blue-900/20 backdrop-blur-sm">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <BarChart3 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                <div className="text-sm">
+                  <p className="font-medium text-blue-300 mb-2">
+                    Métricas Reales del Sistema
+                  </p>
+                  <p className="text-blue-200 leading-relaxed text-xs">
+                    Estadísticas basadas en ejecuciones y valoraciones de prompts reales.
+                    Los datos se actualizan en tiempo real.
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {/* Main Stats Grid */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-2 gap-3"
+        >
+          <Card className="border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
+            <CardContent className="p-4 text-center">
+              <div className="text-xl font-bold text-blue-400">{analytics.totalPrompts}</div>
+              <p className="text-xs text-slate-400">Total Prompts</p>
+              {analytics.promptsThisMonth > 0 && (
+                <p className="text-xs text-green-400">+{analytics.promptsThisMonth} este mes</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
+            <CardContent className="p-4 text-center">
+              <div className="text-xl font-bold text-green-400">{analytics.totalViews.toLocaleString()}</div>
+              <p className="text-xs text-slate-400">Ejecuciones</p>
+              <p className="text-xs text-slate-500">
+                {analytics.summary.avgExecutionsPerPrompt} por prompt
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
+            <CardContent className="p-4 text-center">
+              <div className="text-xl font-bold text-yellow-400">
+                {analytics.avgRating > 0 ? analytics.avgRating.toFixed(1) : '0.0'}
+              </div>
+              <p className="text-xs text-slate-400">Rating Promedio</p>
+              <div className="flex justify-center items-center gap-1 mt-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star 
+                    key={star} 
+                    className={`h-3 w-3 ${
+                      star <= Math.round(analytics.avgRating) 
+                        ? 'text-yellow-400 fill-current' 
+                        : 'text-slate-600'
+                    }`} 
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
+            <CardContent className="p-4 text-center">
+              <div className="text-xl font-bold text-purple-400">
+                {analytics.successRate > 0 ? `${analytics.successRate}%` : '0%'}
+              </div>
+              <p className="text-xs text-slate-400">Tasa de Éxito</p>
+              <div className="w-full bg-slate-700 rounded-full h-1.5 mt-2">
+                <div 
+                  className="bg-purple-400 h-1.5 rounded-full transition-all duration-500"
+                  style={{ width: `${analytics.successRate}%` }}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Top Categories and Models */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+        >
           {/* Top Categories */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle>Categorías Principales</CardTitle>
-                <CardDescription>Distribución de prompts por categoría</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {analytics.topCategories.map((category, index) => (
-                    <div key={category.name} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-sm font-medium">
-                          {index + 1}
-                        </div>
-                        <span className="font-medium">{category.name}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {category.count} prompts
-                        </span>
-                        <Badge variant="secondary">{category.percentage}%</Badge>
-                      </div>
-                    </div>
-                  ))}
+          <Card className="border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg">
+                  <TrendingUp className="h-4 w-4 text-white" />
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                <div>
+                  <CardTitle className="text-white text-sm">Top Categorías</CardTitle>
+                  <CardDescription className="text-slate-400 text-xs">
+                    Más populares
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-3">
+                {analytics?.topCategories?.slice(0, 4).map((category, index) => (
+                  <div key={category.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div className="w-2 h-2 rounded-full bg-green-400 flex-shrink-0" />
+                      <span className="text-sm text-white truncate">{category.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="w-12 bg-slate-700 rounded-full h-1.5">
+                        <div 
+                          className="h-1.5 rounded-full bg-green-400 transition-all duration-500"
+                          style={{ width: `${category.percentage}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-slate-400 w-8 text-right">{category.count}</span>
+                    </div>
+                  </div>
+                )) || (
+                  <p className="text-xs text-slate-500 text-center py-4">No hay datos disponibles</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Top Models */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle>Modelos de IA Más Usados</CardTitle>
-                <CardDescription>Preferencias de modelos de IA</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {analytics.topModels.map((model, index) => (
-                    <div key={model.name} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-sm font-medium">
-                          {index + 1}
-                        </div>
-                        <span className="font-medium">{model.name}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {model.count} usos
-                        </span>
-                        <Badge variant="secondary">{model.percentage}%</Badge>
-                      </div>
-                    </div>
-                  ))}
+          <Card className="border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg">
+                  <Star className="h-4 w-4 text-white" />
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
+                <div>
+                  <CardTitle className="text-white text-sm">Top Modelos</CardTitle>
+                  <CardDescription className="text-slate-400 text-xs">
+                    Más utilizados
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-3">
+                {analytics?.topModels?.slice(0, 4).map((model, index) => (
+                  <div key={model.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div className="w-2 h-2 rounded-full bg-purple-400 flex-shrink-0" />
+                      <span className="text-sm text-white truncate">{model.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="w-12 bg-slate-700 rounded-full h-1.5">
+                        <div 
+                          className="h-1.5 rounded-full bg-purple-400 transition-all duration-500"
+                          style={{ width: `${model.percentage}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-slate-400 w-8 text-right">{model.count}</span>
+                    </div>
+                  </div>
+                )) || (
+                  <p className="text-xs text-slate-500 text-center py-4">No hay datos disponibles</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Popular Prompts */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Prompts Más Populares
-                </CardTitle>
-                <CardDescription>Los prompts con mejor rendimiento</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {analytics.popularPrompts.map((prompt, index) => (
-                    <div key={prompt.id} className="flex items-center justify-between p-3 border rounded-lg">
+        {/* Popular Prompts */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Card className="border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-r from-yellow-600 to-orange-600 rounded-lg">
+                  <Eye className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-white text-base">Prompts Populares</CardTitle>
+                  <CardDescription className="text-slate-400 text-sm">
+                    Los más ejecutados
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-3">
+                {analytics?.popularPrompts?.slice(0, 5).map((prompt, index) => (
+                  <div key={prompt.id} className="p-3 rounded-lg bg-slate-700/30 border border-slate-600">
+                    <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-gray-500">#{index + 1}</span>
-                          <h4 className="font-medium truncate">{prompt.title}</h4>
-                        </div>
-                        <div className="flex items-center gap-4 mt-1 text-sm text-gray-600 dark:text-gray-400">
-                          <span className="flex items-center gap-1">
-                            <Eye className="h-3 w-3" />
-                            {prompt.views}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Download className="h-3 w-3" />
-                            {prompt.executions || prompt.uses} ejecuciones
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Star className="h-3 w-3" />
-                            {prompt.rating}
-                          </span>
+                        <h4 className="font-medium text-white text-sm truncate">{prompt.title}</h4>
+                        <div className="flex items-center gap-3 mt-2">
+                          <div className="flex items-center gap-1">
+                            <Eye className="h-3 w-3 text-blue-400" />
+                            <span className="text-xs text-slate-400">{prompt.executions}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-3 w-3 text-yellow-400" />
+                            <span className="text-xs text-slate-400">{prompt.rating.toFixed(1)}</span>
+                          </div>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/prompts/${prompt.id}`}>Ver</Link>
-                      </Button>
+                      <Badge variant="outline" className="text-xs border-slate-600 text-slate-300 flex-shrink-0">
+                        #{index + 1}
+                      </Badge>
                     </div>
-                  ))}
-                  {analytics.popularPrompts.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
-                      <p>No hay prompts ejecutados aún</p>
-                      <p className="text-xs mt-1">Ejecuta algunos prompts para ver estadísticas de popularidad</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                  </div>
+                )) || (
+                  <p className="text-sm text-slate-500 text-center py-8">
+                    No hay prompts populares aún
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-          {/* Recent Activity */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Actividad Reciente
-                </CardTitle>
-                <CardDescription>Últimas acciones en la plataforma</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {analytics.recentActivity.map((activity, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <div className={`w-2 h-2 rounded-full ${
-                        activity.type === 'created' ? 'bg-green-500' :
-                        activity.type === 'executed' ? 'bg-blue-500' : 'bg-orange-500'
-                      }`} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm">
-                          <span className="font-medium">
-                            {activity.type === 'created' ? 'Creado' :
-                             activity.type === 'executed' ? 'Ejecutado' : 'Visto'}
-                          </span>
-                          : {activity.prompt}
-                        </p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">
-                          {new Date(activity.date).toLocaleDateString()}
-                          {activity.model && ` • ${activity.model}`}
-                        </p>
+        {/* Recent Activity */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <Card className="border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg">
+                  <Clock className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-white text-base">Actividad Reciente</CardTitle>
+                  <CardDescription className="text-slate-400 text-sm">
+                    Últimas ejecuciones
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-3">
+                {analytics?.recentActivity?.slice(0, 5).map((activity, index) => (
+                  <div key={index} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-700/30 transition-colors">
+                    <div className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-white truncate">{activity.prompt}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-slate-400">{activity.date}</span>
+                        {activity.model && (
+                          <Badge variant="outline" className="text-xs border-slate-600 text-slate-400">
+                            {activity.model}
+                          </Badge>
+                        )}
                       </div>
                     </div>
-                  ))}
-                  {analytics.recentActivity.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
-                      <p>No hay actividad reciente</p>
-                      <p className="text-xs mt-1">Crea o ejecuta algunos prompts para ver estadísticas</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
+                  </div>
+                )) || (
+                  <p className="text-sm text-slate-500 text-center py-8">
+                    No hay actividad reciente
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   )

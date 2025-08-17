@@ -46,10 +46,11 @@ function NewPromptForm() {
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
+  const [isMobile, setIsMobile] = useState(false)
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     basic: true,
     content: true,
-    advanced: false
+    advanced: false // Se expandirá automáticamente en móvil
   })
   
   const [formData, setFormData] = useState({
@@ -65,6 +66,27 @@ function NewPromptForm() {
   
   const [newTag, setNewTag] = useState('')
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+
+  // Detectar móvil y expandir configuración avanzada automáticamente
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      
+      // En móvil, expandir automáticamente la configuración avanzada
+      if (mobile) {
+        setExpandedSections(prev => ({
+          ...prev,
+          advanced: true
+        }))
+      }
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Cargar datos del template si vienen en la URL
   useEffect(() => {
@@ -182,6 +204,11 @@ function NewPromptForm() {
   }
 
   const toggleSection = (section: string) => {
+    // En móvil, no permitir colapsar la configuración avanzada
+    if (isMobile && section === 'advanced' && expandedSections.advanced) {
+      return // No hacer nada si intentan colapsar advanced en móvil
+    }
+    
     setExpandedSections(prev => ({
       ...prev,
       [section]: !prev[section]
@@ -469,10 +496,23 @@ function NewPromptForm() {
                                 setValidationErrors(prev => ({ ...prev, content: '' }))
                               }
                             }}
-                            className={`min-h-[300px] bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-purple-500 resize-none ${
-                              validationErrors.content ? 'border-red-400' : ''
+                            className={`w-full resize-none rounded-xl border-2 focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                              validationErrors.content ? 'border-red-400' : 'border-slate-600'
                             }`}
-                            style={{ fontSize: '16px' }} // Prevent zoom on iOS
+                            style={{ 
+                              minHeight: '500px',
+                              height: '500px',
+                              fontSize: '20px', 
+                              lineHeight: '1.8', 
+                              color: '#ffffff',
+                              backgroundColor: '#1e293b',
+                              padding: '20px',
+                              fontFamily: 'system-ui, -apple-system, sans-serif',
+                              fontWeight: '400',
+                              WebkitTextFillColor: '#ffffff',
+                              border: '2px solid #475569',
+                              borderRadius: '12px'
+                            }}
                           />
                         </div>
                         
@@ -518,7 +558,7 @@ function NewPromptForm() {
           >
             <Card className="border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
               <CardHeader 
-                className="pb-3 cursor-pointer"
+                className={`pb-3 ${!isMobile || !expandedSections.advanced ? 'cursor-pointer' : ''}`}
                 onClick={() => toggleSection('advanced')}
               >
                 <div className="flex items-center justify-between">
@@ -527,17 +567,25 @@ function NewPromptForm() {
                       <Settings className="h-4 w-4 text-white" />
                     </div>
                     <div>
-                      <CardTitle className="text-white text-base">Configuración Avanzada</CardTitle>
+                      <CardTitle className="text-white text-base">
+                        Configuración Avanzada
+                        {isMobile && expandedSections.advanced && (
+                          <span className="ml-2 text-xs text-slate-400">(Siempre visible en móvil)</span>
+                        )}
+                      </CardTitle>
                       <CardDescription className="text-slate-400 text-sm">
                         Tags, favoritos y privacidad
                       </CardDescription>
                     </div>
                   </div>
-                  <ChevronDown 
-                    className={`h-5 w-5 text-slate-400 transition-transform ${
-                      expandedSections.advanced ? 'rotate-180' : ''
-                    }`} 
-                  />
+                  {/* Solo mostrar flecha si no es móvil o si está colapsada */}
+                  {(!isMobile || !expandedSections.advanced) && (
+                    <ChevronDown 
+                      className={`h-5 w-5 text-slate-400 transition-transform ${
+                        expandedSections.advanced ? 'rotate-180' : ''
+                      }`} 
+                    />
+                  )}
                 </div>
               </CardHeader>
               

@@ -42,6 +42,7 @@ export function AdvancedFilters({
   availableCategories, 
   availableTags 
 }: AdvancedFiltersProps) {
+  // En móvil, mostrar filtros avanzados por defecto
   const [showAdvanced, setShowAdvanced] = useState(true)
   const [filters, setFilters] = useState<FilterState>({
     search: '',
@@ -53,6 +54,25 @@ export function AdvancedFilters({
     sortBy: 'recent',
     sortOrder: 'desc'
   })
+
+  // Detectar si estamos en móvil y mantener filtros siempre visibles
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      // En móvil, SIEMPRE mostrar los filtros avanzados
+      if (mobile) {
+        setShowAdvanced(true)
+      }
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     onFiltersChange(filters)
@@ -97,6 +117,13 @@ export function AdvancedFilters({
            filters.sortBy !== 'recent'
   }
 
+  // En móvil, no permitir colapsar los filtros
+  const handleToggleAdvanced = () => {
+    if (!isMobile) {
+      setShowAdvanced(!showAdvanced)
+    }
+  }
+
   return (
     <div className="space-y-3 sm:space-y-4">
       {/* Quick Search */}
@@ -112,20 +139,33 @@ export function AdvancedFilters({
         </div>
         
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Button
-            variant={showAdvanced ? "default" : "outline"}
-            size="sm"
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="flex items-center gap-2 flex-1 sm:flex-none justify-center"
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            <span className="text-sm">Filtros Avanzados</span>
-            {hasActiveFilters() && (
-              <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
-                !
-              </Badge>
-            )}
-          </Button>
+          {/* En desktop mostrar botón toggle, en móvil mostrar indicador */}
+          {!isMobile ? (
+            <Button
+              variant={showAdvanced ? "default" : "outline"}
+              size="sm"
+              onClick={handleToggleAdvanced}
+              className="flex items-center gap-2 flex-1 sm:flex-none justify-center"
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              <span className="text-sm">Filtros Avanzados</span>
+              {hasActiveFilters() && (
+                <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                  !
+                </Badge>
+              )}
+            </Button>
+          ) : (
+            <div className="flex items-center gap-2 text-sm text-slate-400 flex-1 justify-center">
+              <SlidersHorizontal className="h-4 w-4" />
+              <span>Filtros Avanzados</span>
+              {hasActiveFilters() && (
+                <Badge variant="secondary" className="h-5 w-5 p-0 flex items-center justify-center text-xs">
+                  !
+                </Badge>
+              )}
+            </div>
+          )}
           
           {hasActiveFilters() && (
             <Button
@@ -189,34 +229,34 @@ export function AdvancedFilters({
         </motion.div>
       )}
 
-      {/* Advanced Filters Panel */}
+      {/* Advanced Filters Panel - Siempre visible en móvil */}
       <AnimatePresence>
-        {showAdvanced && (
+        {(showAdvanced || isMobile) && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, height: isMobile ? 'auto' : 0 }}
             animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
+            exit={{ opacity: 0, height: isMobile ? 'auto' : 0 }}
+            transition={{ duration: isMobile ? 0 : 0.2 }}
           >
-            <Card>
-              <CardHeader className="pb-3 sm:pb-4">
-                <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-                  <Filter className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Card className="border-slate-700/50 bg-slate-900/60 backdrop-blur-sm">
+              <CardHeader className="pb-2 sm:pb-3">
+                <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
                   Filtros Avanzados
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4 sm:space-y-6">
-                {/* Basic Filters Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                  <div>
-                    <Label htmlFor="category" className="text-sm font-medium mb-2 block">
+              <CardContent className="space-y-3 sm:space-y-4 pt-0">
+                {/* Basic Filters - Mobile First Layout */}
+                <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="category" className="text-xs sm:text-sm font-medium">
                       Categoría
                     </Label>
                     <Select 
                       value={filters.category} 
                       onValueChange={(value) => updateFilter('category', value)}
                     >
-                      <SelectTrigger id="category" className="h-10">
+                      <SelectTrigger id="category" className="h-9 sm:h-10 text-sm">
                         <SelectValue placeholder="Todas las categorías" />
                       </SelectTrigger>
                       <SelectContent>
@@ -230,15 +270,15 @@ export function AdvancedFilters({
                     </Select>
                   </div>
 
-                  <div>
-                    <Label htmlFor="aiModel" className="text-sm font-medium mb-2 block">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="aiModel" className="text-xs sm:text-sm font-medium">
                       Modelo de IA
                     </Label>
                     <Select 
                       value={filters.aiModel} 
                       onValueChange={(value) => updateFilter('aiModel', value)}
                     >
-                      <SelectTrigger id="aiModel" className="h-10">
+                      <SelectTrigger id="aiModel" className="h-9 sm:h-10 text-sm">
                         <SelectValue placeholder="Todos los modelos" />
                       </SelectTrigger>
                       <SelectContent>
@@ -252,15 +292,15 @@ export function AdvancedFilters({
                     </Select>
                   </div>
 
-                  <div>
-                    <Label htmlFor="dateRange" className="text-sm font-medium">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="dateRange" className="text-xs sm:text-sm font-medium">
                       Fecha de creación
                     </Label>
                     <Select 
                       value={filters.dateRange} 
                       onValueChange={(value) => updateFilter('dateRange', value as FilterState['dateRange'])}
                     >
-                      <SelectTrigger id="dateRange">
+                      <SelectTrigger id="dateRange" className="h-9 sm:h-10 text-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -274,17 +314,17 @@ export function AdvancedFilters({
                   </div>
                 </div>
 
-                {/* Sort Options */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="sortBy" className="text-sm font-medium">
+                {/* Sort Options - Mobile Optimized */}
+                <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="sortBy" className="text-xs sm:text-sm font-medium">
                       Ordenar por
                     </Label>
                     <Select 
                       value={filters.sortBy} 
                       onValueChange={(value) => updateFilter('sortBy', value as FilterState['sortBy'])}
                     >
-                      <SelectTrigger id="sortBy">
+                      <SelectTrigger id="sortBy" className="h-9 sm:h-10 text-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -296,15 +336,15 @@ export function AdvancedFilters({
                     </Select>
                   </div>
 
-                  <div>
-                    <Label htmlFor="sortOrder" className="text-sm font-medium">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="sortOrder" className="text-xs sm:text-sm font-medium">
                       Orden
                     </Label>
                     <Select 
                       value={filters.sortOrder} 
                       onValueChange={(value) => updateFilter('sortOrder', value as FilterState['sortOrder'])}
                     >
-                      <SelectTrigger id="sortOrder">
+                      <SelectTrigger id="sortOrder" className="h-9 sm:h-10 text-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -315,18 +355,18 @@ export function AdvancedFilters({
                   </div>
                 </div>
 
-                {/* Tags Filter */}
+                {/* Tags Filter - Mobile Optimized */}
                 {availableTags.length > 0 && (
-                  <div>
-                    <Label className="text-sm font-medium mb-3 block">
+                  <div className="space-y-2">
+                    <Label className="text-xs sm:text-sm font-medium">
                       Etiquetas
                     </Label>
-                    <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2 max-h-24 sm:max-h-32 overflow-y-auto">
                       {availableTags.map(tag => (
                         <button
                           key={tag}
                           onClick={() => toggleTag(tag)}
-                          className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                          className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm border transition-colors touch-manipulation min-h-[32px] ${
                             filters.tags.includes(tag)
                               ? 'bg-primary text-primary-foreground border-primary'
                               : 'bg-background border-border hover:bg-muted'
@@ -339,15 +379,16 @@ export function AdvancedFilters({
                   </div>
                 )}
 
-                {/* Options */}
-                <div className="flex items-center space-x-4">
+                {/* Options - Mobile Optimized */}
+                <div className="pt-1">
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="favorite"
                       checked={filters.favorite}
                       onCheckedChange={(checked) => updateFilter('favorite', !!checked)}
+                      className="h-4 w-4"
                     />
-                    <Label htmlFor="favorite" className="text-sm">
+                    <Label htmlFor="favorite" className="text-xs sm:text-sm">
                       Solo favoritos
                     </Label>
                   </div>

@@ -28,8 +28,4 @@ else
 fi
 
 echo "✅ Base de datos configurada correctamente"
-
-# Volver al directorio raíz e iniciar la aplicación
-cd ..
-echo "🚀 Iniciando aplicación..."
-exec node server.js
+echo "🎉 Puedes usar 'npm run dev' para iniciar la aplicación"

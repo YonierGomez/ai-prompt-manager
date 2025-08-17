@@ -127,234 +127,254 @@ export default function ExportPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Cargando prompts...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <p className="text-slate-400">Cargando prompts...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <Link href="/">
-            <Button variant="ghost" size="sm" className="mb-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Volver al inicio
+        {/* Mobile Header - Sticky */}
+        <div className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-700/50">
+          <div className="flex items-center justify-between p-4">
+            <Link href="/">
+              <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Volver</span>
+              </Button>
+            </Link>
+            
+            <div className="flex-1 mx-4">
+              <h1 className="text-lg font-bold text-white truncate">Exportar</h1>
+              <p className="text-xs text-slate-400 truncate">
+                {selectedPrompts.size} de {prompts.length} seleccionados
+              </p>
+            </div>
+
+            <Button 
+              onClick={exportPrompts}
+              disabled={selectedPrompts.size === 0 || isExporting}
+              size="sm"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg disabled:opacity-50"
+            >
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1">
+                {isExporting ? 'Exportando...' : 'Exportar'}
+              </span>
             </Button>
-          </Link>
+          </div>
+        </div>
+
+        <div className="p-4">
+          {/* Success Message */}
+          {exportSuccess && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="mb-4"
+            >
+              <Alert className="border-green-500/30 bg-green-900/20 backdrop-blur-sm">
+                <CheckCircle className="h-4 w-4 text-green-400" />
+                <AlertDescription className="text-green-300">
+                  ¡Exportación exitosa! Archivo descargado.
+                </AlertDescription>
+              </Alert>
+            </motion.div>
+          )}
+
+          {/* Mobile-optimized Controls */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Exportar Prompts
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Selecciona y exporta tus prompts en formato JSON
-            </p>
+            <Card className="mb-4 border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg">
+                    <Filter className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-white text-base">Filtros</CardTitle>
+                    <CardDescription className="text-slate-400 text-sm">
+                      Selecciona los prompts a exportar
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                {/* Mobile-stacked filters */}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-300">Categoría</label>
+                      <Select value={filterCategory} onValueChange={setFilterCategory}>
+                        <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+                          <SelectValue placeholder="Todas las categorías" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todas las categorías</SelectItem>
+                          {categories.map(category => (
+                            <SelectItem key={category} value={category}>
+                              {category}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-300">Modelo de IA</label>
+                      <Select value={filterModel} onValueChange={setFilterModel}>
+                        <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+                          <SelectValue placeholder="Todos los modelos" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos los modelos</SelectItem>
+                          {aiModels.map(model => (
+                            <SelectItem key={model} value={model}>
+                              {model}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Mobile-optimized stats and toggle */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div>
+                        <div className="text-lg font-bold text-white">{prompts.length}</div>
+                        <div className="text-xs text-slate-400">Total</div>
+                      </div>
+                      <div>
+                        <div className="text-lg font-bold text-purple-400">{filteredPrompts.length}</div>
+                        <div className="text-xs text-slate-400">Filtrados</div>
+                      </div>
+                      <div>
+                        <div className="text-lg font-bold text-blue-400">{selectedPrompts.size}</div>
+                        <div className="text-xs text-slate-400">Seleccionados</div>
+                      </div>
+                    </div>
+                    
+                    <Button 
+                      onClick={toggleAll} 
+                      variant="outline" 
+                      className="w-full sm:w-auto bg-slate-700/50 border-slate-600 text-white hover:bg-slate-600"
+                    >
+                      {filteredPrompts.every(p => selectedPrompts.has(p.id)) 
+                        ? 'Deseleccionar todos' 
+                        : 'Seleccionar todos'}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Prompts List */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Card className="border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg">
+                    <Package className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-white text-base">Prompts Disponibles</CardTitle>
+                    <CardDescription className="text-slate-400 text-sm">
+                      Toca para seleccionar/deseleccionar
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                {filteredPrompts.length === 0 ? (
+                  <div className="text-center py-8 text-slate-400">
+                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No hay prompts que coincidan con los filtros</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {filteredPrompts.map((prompt) => (
+                      <motion.div
+                        key={prompt.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                          selectedPrompts.has(prompt.id)
+                            ? 'border-purple-500 bg-purple-900/20 shadow-lg'
+                            : 'border-slate-600 hover:border-slate-500 hover:bg-slate-700/30'
+                        }`}
+                        onClick={() => togglePrompt(prompt.id)}
+                      >
+                        <div className="flex items-start gap-3">
+                          <Checkbox 
+                            checked={selectedPrompts.has(prompt.id)}
+                            onChange={() => {}}
+                            className="mt-1 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-medium text-white truncate text-sm sm:text-base">
+                                  {prompt.title}
+                                </h3>
+                                <p className="text-sm text-slate-400 mt-1 line-clamp-2">
+                                  {prompt.description || 'Sin descripción'}
+                                </p>
+                              </div>
+                              <div className="flex flex-row sm:flex-col gap-2 sm:items-end">
+                                <div className="flex gap-2 flex-wrap">
+                                  <Badge variant="secondary" className="text-xs bg-purple-600/20 text-purple-300 border-purple-500/30">
+                                    {prompt.category}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-xs border-slate-600 text-slate-300">
+                                    {prompt.aiModel}
+                                  </Badge>
+                                </div>
+                                <span className="text-xs text-slate-500">
+                                  {new Date(prompt.createdAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            {prompt.tags.length > 0 && (
+                              <div className="flex gap-1 mt-3 flex-wrap">
+                                {prompt.tags.slice(0, 3).map((tag) => (
+                                  <Badge key={tag} variant="outline" className="text-xs border-slate-600 text-slate-400">
+                                    {tag}
+                                  </Badge>
+                                ))}
+                                {prompt.tags.length > 3 && (
+                                  <span className="text-xs text-slate-500">
+                                    +{prompt.tags.length - 3} más
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </motion.div>
         </div>
-
-        {/* Success Message */}
-        {exportSuccess && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Alert className="mb-6 border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-800 dark:text-green-200">
-                ¡Prompts exportados exitosamente! El archivo se ha descargado.
-              </AlertDescription>
-            </Alert>
-          </motion.div>
-        )}
-
-        {/* Controls */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="h-5 w-5" />
-                Filtros y Selección
-              </CardTitle>
-              <CardDescription>
-                Filtra y selecciona los prompts que deseas exportar
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {/* Filtros */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Categoría</label>
-                  <Select value={filterCategory} onValueChange={setFilterCategory}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todas las categorías" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todas las categorías</SelectItem>
-                      {categories.map(category => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Modelo de IA</label>
-                  <Select value={filterModel} onValueChange={setFilterModel}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todos los modelos" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los modelos</SelectItem>
-                      {aiModels.map(model => (
-                        <SelectItem key={model} value={model}>
-                          {model}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-end">
-                  <Button 
-                    onClick={toggleAll} 
-                    variant="outline" 
-                    className="w-full"
-                  >
-                    {filteredPrompts.every(p => selectedPrompts.has(p.id)) 
-                      ? 'Deseleccionar todos' 
-                      : 'Seleccionar todos'}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Stats */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                  <span>Total: {prompts.length} prompts</span>
-                  <span>Filtrados: {filteredPrompts.length}</span>
-                  <span>Seleccionados: {selectedPrompts.size}</span>
-                </div>
-                
-                <Button 
-                  onClick={exportPrompts}
-                  disabled={selectedPrompts.size === 0 || isExporting}
-                  className="flex items-center gap-2"
-                >
-                  <Download className="h-4 w-4" />
-                  {isExporting ? 'Exportando...' : `Exportar ${selectedPrompts.size} prompts`}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Prompts List */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="h-5 w-5" />
-                Prompts Disponibles
-              </CardTitle>
-              <CardDescription>
-                Haz clic en los prompts para seleccionar/deseleccionar
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {filteredPrompts.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No hay prompts que coincidan con los filtros</p>
-                </div>
-              ) : (
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {filteredPrompts.map((prompt) => (
-                    <motion.div
-                      key={prompt.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                        selectedPrompts.has(prompt.id)
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                      }`}
-                      onClick={() => togglePrompt(prompt.id)}
-                    >
-                      <div className="flex items-start gap-3">
-                        <Checkbox 
-                          checked={selectedPrompts.has(prompt.id)}
-                          onChange={() => {}} // Manejado por el onClick del div
-                          className="mt-1"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-medium text-gray-900 dark:text-white truncate">
-                                {prompt.title}
-                              </h3>
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
-                                {prompt.description || 'Sin descripción'}
-                              </p>
-                            </div>
-                            <div className="flex flex-col gap-2 items-end">
-                              <div className="flex gap-2 flex-wrap">
-                                <Badge variant="secondary" className="text-xs">
-                                  {prompt.category}
-                                </Badge>
-                                <Badge variant="outline" className="text-xs">
-                                  {prompt.aiModel}
-                                </Badge>
-                              </div>
-                              <span className="text-xs text-gray-500">
-                                {new Date(prompt.createdAt).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </div>
-                          
-                          {prompt.tags.length > 0 && (
-                            <div className="flex gap-1 mt-2 flex-wrap">
-                              {prompt.tags.slice(0, 3).map((tag) => (
-                                <Badge key={tag} variant="outline" className="text-xs">
-                                  {tag}
-                                </Badge>
-                              ))}
-                              {prompt.tags.length > 3 && (
-                                <span className="text-xs text-gray-500">
-                                  +{prompt.tags.length - 3} más
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
       </div>
     </div>
   )

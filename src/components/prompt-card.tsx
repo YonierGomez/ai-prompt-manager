@@ -307,16 +307,16 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
                 </div>
               </div>
 
-              <div className="bg-slate-800/30 rounded-lg p-3 border border-slate-700/30">
-                <div className="h-16 overflow-hidden">
+              <div className="bg-slate-800/30 rounded-lg p-3 sm:p-4 border border-slate-700/30">
+                <div className="h-20 sm:h-16 overflow-hidden">
                   {isMarkdownView ? (
                     <MarkdownRenderer 
                       content={truncateText(prompt.content, 150)}
                       compact={true}
-                      className="text-sm text-slate-300"
+                      className="text-sm sm:text-sm text-slate-300"
                     />
                   ) : (
-                    <pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed text-slate-300 overflow-hidden">
+                    <pre className="whitespace-pre-wrap font-mono text-sm sm:text-xs leading-relaxed text-slate-300 overflow-hidden">
                       {truncateText(prompt.content, 150)}
                     </pre>
                   )}
@@ -429,7 +429,7 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
       <motion.article
         whileHover={{ y: -8, scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="group relative overflow-hidden rounded-xl sm:rounded-2xl p-4 sm:p-6 bg-gradient-to-br from-slate-900/80 via-slate-800/60 to-slate-900/40 backdrop-blur-xl border border-slate-700/50 shadow-2xl shadow-black/40 transition-all duration-300 h-[420px] sm:h-[480px] flex flex-col hover:shadow-purple-500/20"
+        className="group relative overflow-hidden rounded-xl sm:rounded-2xl p-4 sm:p-6 bg-gradient-to-br from-slate-900/80 via-slate-800/60 to-slate-900/40 backdrop-blur-xl border border-slate-700/50 shadow-2xl shadow-black/40 transition-all duration-300 h-[460px] sm:h-[480px] flex flex-col hover:shadow-purple-500/20"
       >
         {/* Favorite Badge */}
         {isFavorite && (
@@ -519,20 +519,20 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
 
           {/* Content Display */}
           <div className="bg-slate-800/30 rounded-lg p-3 sm:p-4 border border-slate-700/30 overflow-hidden flex-1 min-h-0">
-            <div className="h-24 sm:h-32 overflow-hidden">
+            <div className="h-28 sm:h-32 overflow-hidden">
               {isMarkdownView ? (
                 <MarkdownRenderer 
-                  content={truncateText(prompt.content, window.innerWidth < 640 ? 100 : 120)}
+                  content={truncateText(prompt.content, window.innerWidth < 640 ? 120 : 140)}
                   compact={true}
-                  className="text-xs sm:text-sm text-slate-300"
+                  className="text-sm sm:text-sm text-slate-300"
                 />
               ) : (
-                <pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed text-slate-300 overflow-hidden">
-                  {truncateText(prompt.content, window.innerWidth < 640 ? 100 : 120)}
+                <pre className="whitespace-pre-wrap font-mono text-sm sm:text-xs leading-relaxed text-slate-300 overflow-hidden">
+                  {truncateText(prompt.content, window.innerWidth < 640 ? 120 : 140)}
                 </pre>
               )}
             </div>
-            {prompt.content.length > (window.innerWidth < 640 ? 100 : 120) && (
+            {prompt.content.length > (window.innerWidth < 640 ? 120 : 140) && (
               <button
                 onClick={() => setShowFullContent(true)}
                 className="mt-1.5 sm:mt-2 text-xs text-purple-400 hover:text-purple-300 transition-colors"
