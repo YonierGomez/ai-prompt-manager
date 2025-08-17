@@ -1,0 +1,76 @@
+# Dockerfile específico para ARM64 (Apple Silicon)
+FROM node:20-alpine AS base
+
+# Instalar dependencias del sistema
+RUN apk add --no-cache \
+    libc6-compat \
+    ca-certificates \
+    python3 \
+    make \
+    g++ \
+    openssl \
+    openssl-dev \
+    sqlite
+
+WORKDIR /app
+
+# Variables de entorno para ARM64
+ENV PRISMA_FORCE_NAPI=true
+ENV PRISMA_SKIP_POSTINSTALL_GENERATE=false
+ENV DATABASE_URL="file:./prisma/dev.db"
+
+# Copiar package files
+COPY package.json package-lock.json* ./
+
+# Instalar dependencias
+RUN npm ci
+
+# Copiar código fuente
+COPY . .
+
+# Generar Prisma client para ARM64
+RUN npx prisma generate
+
+# Build de la aplicación
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+RUN npm run build
+
+# Imagen de producción
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+# Instalar dependencias de runtime
+RUN apk add --no-cache \
+    openssl \
+    ca-certificates \
+    sqlite
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV DATABASE_URL="file:./prisma/dev.db"
+
+# Crear usuario
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copiar archivos necesarios
+COPY --from=base /app/public ./public
+COPY --from=base /app/.next/standalone ./
+COPY --from=base /app/.next/static ./.next/static
+COPY --from=base /app/prisma ./prisma
+COPY --from=base /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=base /app/scripts/init-db.sh ./scripts/init-db.sh
+
+# Permisos
+RUN mkdir -p /app/prisma && chown -R nextjs:nodejs /app/prisma
+RUN chmod +x ./scripts/init-db.sh
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["./scripts/init-db.sh"]

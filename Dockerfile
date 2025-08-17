@@ -23,6 +23,10 @@ RUN apk add --no-cache \
     openssl-dev \
     sqlite
 
+# Variables de entorno específicas para ARM64
+ENV PRISMA_FORCE_NAPI=true
+ENV PRISMA_SKIP_POSTINSTALL_GENERATE=false
+
 WORKDIR /app
 
 # Instalar dependencias de producción
@@ -64,8 +68,11 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV DATABASE_URL="file:./prisma/dev.db"
+ENV PRISMA_FORCE_NAPI=true
 
 # Generar el cliente de Prisma para la arquitectura específica
+# Forzar regeneración para asegurar compatibilidad con la arquitectura target
+RUN rm -rf node_modules/.prisma || true
 RUN npx prisma generate
 
 # Construir la aplicación con Tailwind CSS v4
