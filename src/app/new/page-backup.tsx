@@ -218,7 +218,7 @@ function NewPromptForm() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-6">
                 {/* Title */}
                 <div className="space-y-2">
                   <Label htmlFor="title">Título *</Label>
@@ -338,7 +338,7 @@ function NewPromptForm() {
                     </label>
                   </div>
                 </div>
-              </form>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
@@ -363,10 +363,7 @@ function NewPromptForm() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit}>
-                  </div>
-                </div>
-
+              <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Tags */}
                 <div className="space-y-2">
                   <Label>Tags</Label>
@@ -467,40 +464,6 @@ Muestra un ejemplo práctico...
                         Campo Obligatorio
                       </span>
                     </div>
-                  </div>
-                </div>
-
-                {/* Options */}
-                <div className="space-y-4">
-                  <Label>Opciones</Label>
-                  <div className="flex flex-wrap gap-4">
-                    <label className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.isFavorite}
-                        onChange={(e) => setFormData(prev => ({ ...prev, isFavorite: e.target.checked }))}
-                        className="rounded border-input"
-                      />
-                      <Heart className={`h-4 w-4 ${formData.isFavorite ? 'text-red-500 fill-current' : ''}`} />
-                      <span className="text-sm">Marcar como favorito</span>
-                    </label>
-                    
-                    <label className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.isPrivate}
-                        onChange={(e) => setFormData(prev => ({ ...prev, isPrivate: e.target.checked }))}
-                        className="rounded border-input"
-                      />
-                      {formData.isPrivate ? (
-                        <Lock className="h-4 w-4" />
-                      ) : (
-                        <Globe className="h-4 w-4" />
-                      )}
-                      <span className="text-sm">
-                        {formData.isPrivate ? 'Privado' : 'Público'}
-                      </span>
-                    </label>
                   </div>
                 </div>
 
