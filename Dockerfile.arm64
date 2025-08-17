@@ -17,13 +17,14 @@ WORKDIR /app
 # Variables de entorno para ARM64
 ENV PRISMA_FORCE_NAPI=true
 ENV PRISMA_SKIP_POSTINSTALL_GENERATE=false
+ENV PRISMA_TELEMETRY_DISABLED=1
 ENV DATABASE_URL="file:./prisma/dev.db"
 
 # Copiar package files
 COPY package.json package-lock.json* ./
 
-# Instalar dependencias (usar install para actualizar lock file)
-RUN npm install
+# Instalar dependencias
+RUN npm ci
 
 # Copiar código fuente
 COPY . .
@@ -48,6 +49,7 @@ RUN apk add --no-cache \
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV PRISMA_TELEMETRY_DISABLED=1
 ENV DATABASE_URL="file:./prisma/dev.db"
 
 # Crear usuario

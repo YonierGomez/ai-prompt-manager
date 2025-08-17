@@ -36,7 +36,7 @@ COPY package.json package-lock.json* ./
 # Instalar dependencias optimizadas para la arquitectura de destino
 RUN \
   if [ -f package-lock.json ]; then \
-    npm install --omit=dev --ignore-scripts --platform=$TARGETPLATFORM; \
+    npm ci --omit=dev --ignore-scripts --platform=$TARGETPLATFORM; \
   else \
     echo "Lockfile not found." && npm install --omit=dev --ignore-scripts --platform=$TARGETPLATFORM; \
   fi
@@ -56,7 +56,7 @@ COPY tsconfig.json ./
 # Optimizado para la arquitectura de destino
 RUN \
   if [ -f package-lock.json ]; then \
-    npm install --ignore-scripts --platform=$TARGETPLATFORM; \
+    npm ci --ignore-scripts --platform=$TARGETPLATFORM; \
   else \
     echo "Lockfile not found." && npm install --ignore-scripts --platform=$TARGETPLATFORM; \
   fi
