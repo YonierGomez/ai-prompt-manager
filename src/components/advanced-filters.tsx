@@ -42,7 +42,7 @@ export function AdvancedFilters({
   availableCategories, 
   availableTags 
 }: AdvancedFiltersProps) {
-  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [showAdvanced, setShowAdvanced] = useState(true)
   const [filters, setFilters] = useState<FilterState>({
     search: '',
     category: 'all',

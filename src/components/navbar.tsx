@@ -17,7 +17,8 @@ import {
   Folder,
   Download,
   Upload,
-  BarChart3
+  BarChart3,
+  Settings
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -38,6 +39,7 @@ export function Navbar() {
     { href: '/categories', label: 'Categorías', icon: Folder },
     { href: '/favorites', label: 'Favoritos', icon: Heart },
     { href: '/analytics', label: 'Análisis', icon: BarChart3 },
+    { href: '/settings', label: 'Configuración', icon: Settings },
   ]
 
   if (!mounted) {
