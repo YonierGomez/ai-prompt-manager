@@ -1,6 +1,6 @@
 # Multi-architecture build support
 # Soporta tanto x86_64 como ARM (arm64, armv7)
-FROM --platform=$BUILDPLATFORM node:24-alpine AS base
+FROM --platform=$BUILDPLATFORM node:22-alpine AS base
 
 # Declarar argumentos de build para multi-arquitectura
 ARG TARGETPLATFORM
@@ -70,7 +70,7 @@ COPY . .
 # Variables de entorno para el build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-ENV DATABASE_URL="file:./prisma/dev.db"
+ENV DATABASE_URL="file:./dev.db"
 ENV PRISMA_FORCE_NAPI=true
 
 # Generar el cliente de Prisma para la arquitectura específica
@@ -130,7 +130,7 @@ EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-ENV DATABASE_URL="file:./prisma/dev.db"
+ENV DATABASE_URL="file:./dev.db"
 
 # Comando para iniciar la aplicación con migraciones
 CMD ["./scripts/init-db.sh"]
