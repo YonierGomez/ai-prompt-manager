@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ClientIcon } from './ClientIcon'
 import { 
   Search, 
   Plus, 
@@ -18,7 +19,6 @@ import {
   Settings,
   Cloud
 } from 'lucide-react'
-import { ClientIcon } from './ClientIcon'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
