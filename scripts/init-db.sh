@@ -2,8 +2,8 @@
 
 echo "🚀 Iniciando configuración de base de datos..."
 
-# Variables de entorno para Prisma - consistente con schema.prisma
-export DATABASE_URL="file:./dev.db"
+# Variables de entorno para Prisma - usando el directorio persistente
+export DATABASE_URL="file:./data/dev.db"
 
 # Verificar si Prisma está disponible
 if ! command -v npx > /dev/null 2>&1; then
@@ -11,20 +11,27 @@ if ! command -v npx > /dev/null 2>&1; then
     exit 1
 fi
 
-# Crear directorio de base de datos si no existe y asegurar permisos
-mkdir -p ./prisma
-cd ./prisma
+# Crear directorio de base de datos persistente si no existe
+mkdir -p ./data
 
-# Aplicar migraciones/schema a la base de datos
-echo "🔄 Aplicando schema a la base de datos..."
-npx prisma db push --force-reset --accept-data-loss
-
-# Ejecutar seed si existe  
-if [ -f "seed.ts" ]; then
-    echo "🌱 Ejecutando seed de datos..."
-    npx prisma db seed
+# Verificar si la base de datos ya existe
+if [ -f "./data/dev.db" ]; then
+    echo "📊 Base de datos existente encontrada - conservando datos"
+    echo "🔄 Verificando schema..."
+    npx prisma db push
 else
-    echo "⚠️  No se encontró archivo de seed"
+    echo "🆕 Creando nueva base de datos..."
+    # Aplicar migraciones/schema a la base de datos
+    echo "🔄 Aplicando schema a la base de datos..."
+    npx prisma db push --force-reset --accept-data-loss
+    
+    # Ejecutar seed si existe y es una nueva base de datos
+    if [ -f "./prisma/seed.ts" ]; then
+        echo "🌱 Ejecutando seed de datos..."
+        npx prisma db seed
+    else
+        echo "⚠️  No se encontró archivo de seed"
+    fi
 fi
 
 echo "✅ Base de datos configurada correctamente"

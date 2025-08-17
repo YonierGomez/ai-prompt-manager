@@ -39,7 +39,7 @@ RUN addgroup --system --gid 1001 nodejs && \
 # Variables de entorno
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
-    DATABASE_URL="file:./prisma/dev.db" \
+    DATABASE_URL="file:./data/dev.db" \
     PORT=3000 \
     HOSTNAME="0.0.0.0"
 
@@ -53,9 +53,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/scripts/init-db.sh ./scripts/init-db.sh
 
-# Configurar permisos
+# Configurar permisos y crear directorios para datos persistentes
 RUN chmod +x ./scripts/init-db.sh && \
-    mkdir -p ./prisma
+    mkdir -p ./data ./uploads
 
 USER nextjs
 

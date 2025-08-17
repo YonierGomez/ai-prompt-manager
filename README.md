@@ -104,6 +104,87 @@ npm run db:studio    # Abrir Prisma Studio
 npm run db:reset     # Resetear y repoblar DB
 ```
 
+## 🐳 Despliegue con Docker
+
+### **Configuración Básica**
+
+Para ejecutar la aplicación con Docker y mantener tus prompts persistentes:
+
+```bash
+# Clonar el repositorio
+git clone https://github.com/YonierGomez/ai-prompt-manager.git
+cd ai-prompt-manager
+
+# Ejecutar con Docker Compose
+docker-compose up -d
+```
+
+La aplicación estará disponible en `http://localhost:3000`
+
+### **Persistencia de Datos**
+
+Los datos se almacenan en **volúmenes Docker nombrados** que persisten entre reconstrucciones:
+
+- `ai_prompt_data`: Base de datos SQLite con todos tus prompts
+- `ai_prompt_uploads`: Archivos subidos (futuras funcionalidades)
+
+### **Gestión de Volúmenes**
+
+Usa el script incluido para gestionar tus datos:
+
+```bash
+# Ver estado de los volúmenes
+./scripts/docker-volumes.sh status
+
+# Crear backup de tus datos
+./scripts/docker-volumes.sh backup
+
+# Restaurar desde backup
+./scripts/docker-volumes.sh restore ai-prompt-backup-20241217-143000.tar.gz
+
+# Listar volúmenes existentes
+./scripts/docker-volumes.sh list
+
+# Limpiar volúmenes no utilizados
+./scripts/docker-volumes.sh clean
+
+# Resetear completamente (¡PELIGROSO!)
+./scripts/docker-volumes.sh reset
+```
+
+### **Actualizaciones**
+
+Para actualizar la aplicación sin perder datos:
+
+```bash
+# Detener contenedores
+docker-compose down
+
+# Actualizar código
+git pull
+
+# Reconstruir y ejecutar (los datos se mantienen)
+docker-compose up -d --build
+```
+
+### **Troubleshooting Docker**
+
+**Problema: Los prompts desaparecen después de reconstruir**
+```bash
+# Verificar que los volúmenes existen
+docker volume ls | grep ai_prompt
+
+# Verificar el estado de los volúmenes
+./scripts/docker-volumes.sh status
+```
+
+**Problema: Permisos de base de datos**
+```bash
+# Reiniciar contenedores con configuración limpia
+docker-compose down
+docker-compose up -d
+```
+
 ## 🏗️ Arquitectura del Proyecto
 
 ```
