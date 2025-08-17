@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, Cloud, Download, Upload } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { CloudStorage } from '@/components/cloud-storage-hybrid'
+import { CloudStorage } from '@/components/cloud-storage'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function CloudStoragePage() {
