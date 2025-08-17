@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { motion, AnimatePresence } from 'framer-motion'
+import { ClientIcon } from './ClientIcon'
 
 interface SearchAndFiltersProps {
   onSearch: (query: string) => void
@@ -102,31 +103,31 @@ export function SearchAndFilters({ onSearch, onFilter, className }: SearchAndFil
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Barra de búsqueda */}
-      <div className="flex gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1 min-w-0">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4 z-10" />
           <Input
             type="text"
-            placeholder="Buscar prompts por título, contenido o tags..."
+            placeholder="Buscar prompts..."
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full px-4 py-3 pl-10 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-400 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 focus:outline-none transition-all duration-200"
+            className="w-full px-4 py-3 pl-10 pr-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-400 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 focus:outline-none transition-all duration-200 text-sm sm:text-base min-h-[48px]"
           />
         </div>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
+          className={`inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 w-full sm:w-auto min-h-[48px] whitespace-nowrap ${
             hasActiveFilters 
               ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg hover:shadow-purple-500/25' 
               : 'bg-white/5 backdrop-blur-md border border-white/10 text-slate-200 hover:bg-white/10 hover:text-white'
           }`}
         >
-          <Filter className="h-4 w-4" />
-          <span className="hidden sm:inline">Filtros</span>
+          <ClientIcon Icon={Filter} className="h-4 w-4 flex-shrink-0" />
+          <span>Filtros</span>
           {hasActiveFilters && (
-            <div className="w-2 h-2 bg-white rounded-full"></div>
+            <div className="w-2 h-2 bg-white rounded-full flex-shrink-0"></div>
           )}
-          <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${showFilters ? 'rotate-180' : ''}`} />
+          <ClientIcon Icon={ChevronDown} className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showFilters ? 'rotate-180' : ''}`} />
         </button>
       </div>
 
@@ -148,7 +149,7 @@ export function SearchAndFilters({ onSearch, onFilter, className }: SearchAndFil
                       onClick={clearFilters}
                       className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl font-medium text-sm transition-all duration-200 text-slate-300 hover:bg-white/5 hover:text-white"
                     >
-                      <X className="h-4 w-4" />
+                      <ClientIcon Icon={X} className="h-4 w-4" />
                       Limpiar
                     </button>
                   )}
@@ -156,7 +157,7 @@ export function SearchAndFilters({ onSearch, onFilter, className }: SearchAndFil
                     onClick={() => setShowFilters(false)}
                     className="inline-flex items-center justify-center p-2 rounded-xl font-medium text-sm transition-all duration-200 text-slate-300 hover:bg-white/5 hover:text-white"
                   >
-                    <X className="h-4 w-4" />
+                    <ClientIcon Icon={X} className="h-4 w-4" />
                   </button>
                 </div>
               </div>
@@ -255,7 +256,7 @@ export function SearchAndFilters({ onSearch, onFilter, className }: SearchAndFil
                 onClick={() => handleFilterChange('favorites', false)}
                 className="ml-1 hover:bg-amber-500/20 rounded-full p-0.5 transition-colors"
               >
-                <X className="h-3 w-3" />
+                <ClientIcon Icon={X} className="h-3 w-3" />
               </button>
             </div>
           )}
@@ -266,7 +267,7 @@ export function SearchAndFilters({ onSearch, onFilter, className }: SearchAndFil
                 onClick={() => handleFilterChange('dateRange', 'all')}
                 className="ml-1 hover:bg-blue-500/20 rounded-full p-0.5 transition-colors"
               >
-                <X className="h-3 w-3" />
+                <ClientIcon Icon={X} className="h-3 w-3" />
               </button>
             </div>
           )}
@@ -277,7 +278,7 @@ export function SearchAndFilters({ onSearch, onFilter, className }: SearchAndFil
                 onClick={() => toggleArrayFilter('categories', category)}
                 className="ml-1 hover:bg-purple-500/20 rounded-full p-0.5 transition-colors"
               >
-                <X className="h-3 w-3" />
+                <ClientIcon Icon={X} className="h-3 w-3" />
               </button>
             </div>
           ))}
@@ -288,7 +289,7 @@ export function SearchAndFilters({ onSearch, onFilter, className }: SearchAndFil
                 onClick={() => toggleArrayFilter('models', model)}
                 className="ml-1 hover:bg-emerald-500/20 rounded-full p-0.5 transition-colors"
               >
-                <X className="h-3 w-3" />
+                <ClientIcon Icon={X} className="h-3 w-3" />
               </button>
             </div>
           ))}

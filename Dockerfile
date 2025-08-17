@@ -9,7 +9,7 @@ WORKDIR /app
 # Stage 1: Instalar dependencias
 FROM base AS deps
 COPY package*.json ./
-RUN npm ci --no-audit --no-fund && \
+RUN npm ci --no-audit --no-fund --silent 2>/dev/null && \
     npm cache clean --force
 
 # Stage 2: Build de la aplicación

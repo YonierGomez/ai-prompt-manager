@@ -5,6 +5,7 @@ import { Share2, Copy, Twitter, Facebook, Linkedin, MessageCircle, Download, QrC
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { copyToClipboard } from '@/lib/clipboard'
 
 interface SharePromptProps {
   prompt: {
@@ -44,17 +45,18 @@ export function SharePrompt({ prompt, onClose }: SharePromptProps) {
     } catch (err) {
       console.log('Error sharing:', err)
       // Fallback a copiar al portapapeles
-      copyToClipboard(shareUrl)
+      handleCopyToClipboard(shareUrl)
     }
   }
 
   // Copiar al portapapeles
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text)
+  const handleCopyToClipboard = async (text: string) => {
+    const result = await copyToClipboard(text)
+    
+    if (result.success) {
       alert('¡Copiado al portapapeles! 📋')
-    } catch (err) {
-      alert('Error al copiar al portapapeles')
+    } else {
+      alert('Error al copiar al portapapeles. Por favor, selecciona y copia el texto manualmente.')
     }
   }
 
@@ -213,7 +215,7 @@ export function SharePrompt({ prompt, onClose }: SharePromptProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => copyToClipboard(shareUrl)}
+                  onClick={() => handleCopyToClipboard(shareUrl)}
                 >
                   <Copy className="h-4 w-4" />
                 </Button>
@@ -234,7 +236,7 @@ export function SharePrompt({ prompt, onClose }: SharePromptProps) {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => copyToClipboard(shareText)}
+                onClick={() => handleCopyToClipboard(shareText)}
                 className="w-full"
               >
                 <Copy className="h-4 w-4 mr-2" />

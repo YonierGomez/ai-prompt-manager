@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { SearchAndFilters } from '@/components/search-and-filters'
 import { SharePrompt } from '@/components/share-prompt'
+import { copyToClipboard, showManualCopyModal } from '@/lib/clipboard'
 import { Heart, Copy, Share2, Eye, Calendar, Tag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -133,11 +134,13 @@ export default function HomePage() {
   }
 
   const copyPrompt = async (content: string) => {
-    try {
-      await navigator.clipboard.writeText(content)
+    const result = await copyToClipboard(content)
+    
+    if (result.success) {
       alert('¡Prompt copiado al portapapeles! 📋')
-    } catch (err) {
-      alert('Error al copiar el prompt')
+    } else {
+      // Mostrar modal de copia manual
+      showManualCopyModal(content)
     }
   }
 

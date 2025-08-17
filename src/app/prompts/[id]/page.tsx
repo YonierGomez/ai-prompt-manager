@@ -64,11 +64,97 @@ export default function PromptDetailPage() {
     if (!prompt) return
     
     try {
-      await navigator.clipboard.writeText(prompt.content)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      // Verificar si la API moderna de clipboard está disponible
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(prompt.content)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      } else {
+        // Fallback para navegadores más antiguos usando execCommand
+        const textArea = document.createElement('textarea')
+        textArea.value = prompt.content
+        textArea.style.position = 'fixed'
+        textArea.style.left = '-999999px'
+        textArea.style.top = '-999999px'
+        textArea.style.opacity = '0'
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+        
+        const success = document.execCommand('copy')
+        document.body.removeChild(textArea)
+        
+        if (success) {
+          setCopied(true)
+          setTimeout(() => setCopied(false), 2000)
+        } else {
+          throw new Error('execCommand copy failed')
+        }
+      }
     } catch (err) {
       console.error('Failed to copy:', err)
+      
+      // Mostrar un alert como fallback final
+      const userWantsCopy = confirm(`No se pudo copiar automáticamente al portapapeles. ¿Quieres ver el contenido para copiarlo manualmente?`)
+      if (userWantsCopy) {
+        // Crear un modal temporal para mostrar el contenido
+        const modal = document.createElement('div')
+        modal.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.8);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 10000;
+          padding: 20px;
+        `
+        
+        const content = document.createElement('div')
+        content.style.cssText = `
+          background: white;
+          padding: 20px;
+          border-radius: 8px;
+          max-width: 80%;
+          max-height: 80%;
+          overflow: auto;
+        `
+        
+        const textarea = document.createElement('textarea')
+        textarea.value = prompt.content
+        textarea.style.cssText = `
+          width: 100%;
+          height: 300px;
+          margin-bottom: 10px;
+          padding: 10px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+        `
+        textarea.readOnly = true
+        
+        const button = document.createElement('button')
+        button.textContent = 'Cerrar'
+        button.style.cssText = `
+          padding: 10px 20px;
+          background: #007bff;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+        `
+        button.onclick = () => document.body.removeChild(modal)
+        
+        content.appendChild(textarea)
+        content.appendChild(button)
+        modal.appendChild(content)
+        document.body.appendChild(modal)
+        
+        // Seleccionar el texto automáticamente
+        textarea.select()
+      }
     }
   }
 

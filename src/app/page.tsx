@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { SearchAndFilters } from '@/components/search-and-filters'
 import { SharePrompt } from '@/components/share-prompt'
+import { copyToClipboard, showManualCopyModal } from '@/lib/clipboard'
 import { 
   Heart, 
   Copy, 
@@ -176,11 +177,13 @@ export default function HomePage() {
   }
 
   const copyPrompt = async (content: string) => {
-    try {
-      await navigator.clipboard.writeText(content)
+    const result = await copyToClipboard(content)
+    
+    if (result.success) {
       alert('¡Prompt copiado al portapapeles! 📋')
-    } catch (err) {
-      alert('Error al copiar el prompt')
+    } else {
+      // Mostrar modal de copia manual
+      showManualCopyModal(content)
     }
   }
 
@@ -247,17 +250,17 @@ export default function HomePage() {
   ]
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
       {/* Hero Section */}
       <motion.section 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center py-8 sm:py-12 mb-8 sm:mb-12"
+        className="text-center py-6 sm:py-12 mb-6 sm:mb-12"
       >
-        <div className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent mb-4">
+        <div className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent mb-3 sm:mb-4 px-2">
           Tu Studio de Prompts IA
         </div>
-        <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto px-4">
+        <p className="text-sm sm:text-lg text-slate-300 max-w-2xl mx-auto px-4">
           Crea, organiza y optimiza prompts para modelos de inteligencia artificial. 
           Potencia tu productividad con nuestra biblioteca inteligente.
         </p>
@@ -305,7 +308,7 @@ export default function HomePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="relative rounded-xl sm:rounded-2xl p-4 sm:p-6 bg-gradient-to-br from-slate-900/80 via-slate-800/60 to-slate-900/40 backdrop-blur-xl border border-slate-700/50 shadow-2xl shadow-black/40 mb-6 sm:mb-8"
+        className="relative rounded-xl sm:rounded-2xl p-3 sm:p-6 bg-gradient-to-br from-slate-900/80 via-slate-800/60 to-slate-900/40 backdrop-blur-xl border border-slate-700/50 shadow-2xl shadow-black/40 mb-4 sm:mb-8"
       >
         <SearchAndFilters
           onSearch={handleSearch}

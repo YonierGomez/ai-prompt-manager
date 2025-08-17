@@ -20,6 +20,9 @@
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f"
   },
+  "overrides": {
+    "node-domexception": "npm:domexception@^4.0.0"
+  },
   "dependencies": {
     "@prisma/client": "^6.14.0",
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -41,6 +44,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "domexception": "^4.0.0",
     "framer-motion": "^12.23.12",
     "google-auth-library": "^10.2.1",
     "googleapis": "^156.0.0",

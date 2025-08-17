@@ -18,6 +18,7 @@ import {
   Settings,
   Cloud
 } from 'lucide-react'
+import { ClientIcon } from './ClientIcon'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -66,7 +67,7 @@ export function Navbar() {
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition-opacity"></div>
               <div className="relative bg-gradient-to-r from-purple-600 to-blue-600 p-1.5 sm:p-2 rounded-lg">
-                <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                <ClientIcon Icon={Zap} className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               </div>
             </div>
             <div className="hidden sm:block">
@@ -116,7 +117,7 @@ export function Navbar() {
               href="/new" 
               className="inline-flex items-center justify-center gap-1.5 xl:gap-2 px-4 xl:px-6 py-2 xl:py-3 rounded-xl font-medium text-xs xl:text-sm transition-all duration-200 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 shadow-lg hover:shadow-purple-500/25 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:ring-offset-2 focus:ring-offset-black"
             >
-              <Plus className="h-4 w-4" />
+              <ClientIcon Icon={Plus} className="h-4 w-4" />
               <span className="hidden xl:inline">Nuevo</span>
             </Link>
           </div>
@@ -128,13 +129,13 @@ export function Navbar() {
               className="inline-flex items-center justify-center p-2 rounded-xl text-slate-300 hover:bg-white/5 hover:text-white transition-all duration-200"
               aria-label="Buscar"
             >
-              <Search className="h-4 w-4" />
+              <ClientIcon Icon={Search} className="h-4 w-4" />
             </button>
             <Link 
               href="/new" 
               className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 shadow-lg hover:shadow-purple-500/25"
             >
-              <Plus className="h-4 w-4" />
+              <ClientIcon Icon={Plus} className="h-4 w-4" />
               <span className="hidden md:inline">Nuevo</span>
             </Link>
             <button
@@ -142,7 +143,7 @@ export function Navbar() {
               className="inline-flex items-center justify-center p-2 rounded-xl text-slate-300 hover:bg-white/5 hover:text-white transition-all duration-200"
               aria-label="Menú"
             >
-              {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              {isMenuOpen ? <ClientIcon Icon={X} className="h-4 w-4" /> : <ClientIcon Icon={Menu} className="h-4 w-4" />}
             </button>
           </div>
 
@@ -153,14 +154,14 @@ export function Navbar() {
               className="inline-flex items-center justify-center p-2.5 rounded-xl text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 transition-all duration-200 shadow-lg"
               aria-label="Nuevo prompt"
             >
-              <Plus className="h-4 w-4" />
+              <ClientIcon Icon={Plus} className="h-4 w-4" />
             </Link>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="inline-flex items-center justify-center p-2.5 rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition-all duration-200"
               aria-label="Menú"
             >
-              {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              {isMenuOpen ? <ClientIcon Icon={X} className="h-4 w-4" /> : <ClientIcon Icon={Menu} className="h-4 w-4" />}
             </button>
           </div>
         </div>
@@ -208,7 +209,7 @@ export function Navbar() {
                 className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-medium text-sm transition-all duration-200 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 shadow-lg hover:shadow-purple-500/25 w-full"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <Plus className="h-4 w-4" />
+                <ClientIcon Icon={Plus} className="h-4 w-4" />
                 Crear Nuevo Prompt
               </Link>
             </div>

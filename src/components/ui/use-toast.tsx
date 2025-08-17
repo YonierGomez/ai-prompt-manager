@@ -1,3 +1,5 @@
+'use client'
+
 import * as React from 'react'
 import { Toast, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from './toaster'
 

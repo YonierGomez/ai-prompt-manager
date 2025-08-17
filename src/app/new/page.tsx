@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
+import { ClientIcon } from '@/components/ClientIcon'
 import { 
   ArrowLeft,
   Save,
@@ -240,17 +241,15 @@ function NewPromptForm() {
         <div className="flex items-center justify-between p-4">
           <Button 
             variant="ghost" 
-            size="sm"
+            size="sm" 
             asChild
             className="text-slate-300 hover:text-white"
           >
             <Link href="/" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
+              <ClientIcon Icon={ArrowLeft} className="h-4 w-4" />
               <span className="hidden sm:inline">Volver</span>
             </Link>
-          </Button>
-          
-          <div className="flex-1 mx-4">
+          </Button>          <div className="flex-1 mx-4">
             <h1 className="text-lg font-bold text-white truncate">Nuevo Prompt</h1>
             <div className="flex items-center gap-2 mt-1">
               <div className="flex-1 bg-slate-700 rounded-full h-1.5">
@@ -273,7 +272,7 @@ function NewPromptForm() {
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
             ) : (
               <>
-                <Save className="h-4 w-4 mr-1" />
+                <ClientIcon Icon={Save} className="h-4 w-4 mr-1" />
                 <span className="hidden sm:inline">Guardar</span>
               </>
             )}
@@ -296,7 +295,7 @@ function NewPromptForm() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg">
-                      <Edit3 className="h-4 w-4 text-white" />
+                      <ClientIcon Icon={Edit3} className="h-4 w-4 text-white" />
                     </div>
                     <div>
                       <CardTitle className="text-white text-base">Información Básica</CardTitle>
@@ -447,13 +446,13 @@ function NewPromptForm() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg">
-                      <Sparkles className="h-4 w-4 text-white" />
+                      <ClientIcon Icon={Sparkles} className="h-4 w-4 text-white" />
                     </div>
                     <div>
                       <CardTitle className="text-white text-base flex items-center gap-2">
                         Contenido del Prompt *
                         {validationErrors.content && (
-                          <AlertCircle className="h-4 w-4 text-red-400" />
+                          <ClientIcon Icon={AlertCircle} className="h-4 w-4 text-red-400" />
                         )}
                       </CardTitle>
                       <CardDescription className="text-slate-400 text-sm">
@@ -564,7 +563,7 @@ function NewPromptForm() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-gradient-to-r from-slate-600 to-slate-700 rounded-lg">
-                      <Settings className="h-4 w-4 text-white" />
+                      <ClientIcon Icon={Settings} className="h-4 w-4 text-white" />
                     </div>
                     <div>
                       <CardTitle className="text-white text-base">
@@ -714,7 +713,7 @@ function NewPromptForm() {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Save className="h-4 w-4" />
+                <ClientIcon Icon={Save} className="h-4 w-4" />
                 <span>Guardar Prompt</span>
               </div>
             )}

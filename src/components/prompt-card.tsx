@@ -4,7 +4,9 @@ import { useState } from 'react'
 import { Copy, Star, ExternalLink, Share2, Heart, Zap, Clock, Eye, FileText, Code2, Maximize2, X, Check, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn, formatDate, truncateText, AI_MODELS } from '@/lib/utils'
+import { copyToClipboard, showManualCopyModal } from '@/lib/clipboard'
 import { MarkdownRenderer } from './markdown-renderer'
+import { ClientIcon } from './ClientIcon'
 
 interface Prompt {
   id: string
@@ -39,25 +41,13 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
     
     setCopyStatus('copying')
     
-    try { 
-      // Usar la API moderna del portapapeles si está disponible
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(prompt.content)
-      } else {
-        // Fallback para navegadores más antiguos
-        const textArea = document.createElement('textarea')
-        textArea.value = prompt.content
-        textArea.style.position = 'fixed'
-        textArea.style.left = '-999999px'
-        textArea.style.top = '-999999px'
-        document.body.appendChild(textArea)
-        textArea.focus()
-        textArea.select()
-        document.execCommand('copy')
-        document.body.removeChild(textArea)
-      }
-      
+    const result = await copyToClipboard(prompt.content)
+    
+    if (result.success) {
       setCopyStatus('success')
+      
+      // Mostrar notificación de éxito
+      alert('¡Prompt copiado al portapapeles! 📋')
       
       // Registrar la ejecución/copia (solo si estamos en modo remoto)
       const storageMode = localStorage.getItem('storage-mode') || 'local'
@@ -87,15 +77,15 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
           console.warn('No se pudo registrar la copia localmente:', localError)
         }
       }
-      
-      // Resetear el estado después de 2 segundos
-      setTimeout(() => setCopyStatus('idle'), 2000)
-      
-    } catch (err) { 
-      console.error('Failed to copy:', err)
+    } else {
       setCopyStatus('error')
-      setTimeout(() => setCopyStatus('idle'), 2000)
+      
+      // Mostrar modal de copia manual
+      showManualCopyModal(prompt.content)
     }
+    
+    // Resetear el estado después de 2 segundos
+    setTimeout(() => setCopyStatus('idle'), 2000)
   }
 
   const handleShare = async () => {
@@ -149,7 +139,7 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
                     {prompt.category}
                   </span>
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-700/50 text-slate-300 border border-slate-600/50" style={{ color: aiModelInfo?.color }}>
-                    <Zap className="h-3 w-3" />
+                    <ClientIcon Icon={Zap} className="h-3 w-3" />
                     {aiModelInfo?.label || prompt.aiModel}
                   </span>
                 </div>
@@ -189,11 +179,11 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
                   } disabled:opacity-50`}
                 >
                   {copyStatus === 'copying' ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <ClientIcon Icon={Loader2} className="h-4 w-4 animate-spin" />
                   ) : copyStatus === 'success' ? (
-                    <Check className="h-4 w-4" />
+                    <ClientIcon Icon={Check} className="h-4 w-4" />
                   ) : (
-                    <Copy className="h-4 w-4" />
+                    <ClientIcon Icon={Copy} className="h-4 w-4" />
                   )}
                   {copyStatus === 'copying' ? 'Copiando...' : 
                    copyStatus === 'success' ? '¡Copiado!' : 
@@ -203,7 +193,7 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
                   onClick={handleShare}
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
                 >
-                  <Share2 className="h-4 w-4" />
+                  <ClientIcon Icon={Share2} className="h-4 w-4" />
                   Compartir
                 </button>
               </div>
@@ -241,7 +231,7 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
                 {isFavorite && (
                   <div className="flex-shrink-0 ml-2">
                     <div className="inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md text-xs font-semibold bg-amber-500/20 text-amber-200 border border-amber-500/30">
-                      <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-current mr-0.5 sm:mr-1" />
+                      <ClientIcon Icon={Star} className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-current mr-0.5 sm:mr-1" />
                       <span className="hidden sm:inline">Favorito</span>
                     </div>
                   </div>
@@ -354,7 +344,7 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
                     className="inline-flex items-center justify-center p-1.5 sm:p-2 rounded-lg font-medium text-sm transition-all duration-200 text-purple-400 hover:bg-purple-500/10 hover:text-purple-300 touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-[40px] sm:min-w-[40px]"
                     aria-label="Ver contenido completo"
                   >
-                    <Maximize2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <ClientIcon Icon={Maximize2} className="h-3 w-3 sm:h-4 sm:w-4" />
                   </button>
                   
                   <button
@@ -383,11 +373,11 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
                     aria-label={copyStatus === 'success' ? 'Copiado' : 'Copiar'}
                   >
                     {copyStatus === 'copying' ? (
-                      <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                      <ClientIcon Icon={Loader2} className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
                     ) : copyStatus === 'success' ? (
-                      <Check className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <ClientIcon Icon={Check} className="h-3 w-3 sm:h-4 sm:w-4" />
                     ) : (
-                      <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <ClientIcon Icon={Copy} className="h-3 w-3 sm:h-4 sm:w-4" />
                     )}
                   </button>
                   
@@ -396,7 +386,7 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
                     className="inline-flex items-center justify-center p-1.5 sm:p-2 rounded-lg font-medium text-sm transition-all duration-200 text-slate-400 hover:bg-slate-700/50 hover:text-slate-300 touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-[40px] sm:min-w-[40px]" 
                     aria-label="Compartir"
                   >
-                    <Share2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <ClientIcon Icon={Share2} className="h-3 w-3 sm:h-4 sm:w-4" />
                   </button>
                 </div>
                 
@@ -405,7 +395,7 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
                   className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg font-medium text-sm transition-all duration-200 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 shadow-lg hover:shadow-purple-500/25 w-full touch-manipulation min-h-[44px]"
                   aria-label="Ver detalles"
                 >
-                  <ExternalLink className="h-3 w-3 sm:h-3 sm:w-3" />
+                  <ClientIcon Icon={ExternalLink} className="h-3 w-3 sm:h-3 sm:w-3" />
                   <span className="hidden lg:inline">Ver Detalles</span>
                   <span className="lg:hidden text-xs sm:text-sm">Detalles</span>
                 </a>
