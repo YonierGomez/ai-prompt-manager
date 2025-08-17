@@ -28,14 +28,20 @@ export function StorageSettings() {
 
   useEffect(() => {
     setIsClient(true)
-    // Cargar configuración guardada
-    const savedMode = localStorage.getItem('storage-mode') as StorageMode
-    if (savedMode) {
-      setStorageMode(savedMode)
+    // Cargar configuración guardada solo en el cliente
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      const savedMode = localStorage.getItem('storage-mode') as StorageMode
+      if (savedMode) {
+        setStorageMode(savedMode)
+      }
+      // Actualizar analytics
+      setAnalytics(localPromptStorage.getAnalytics())
     }
   }, [])
 
   const handleStorageModeChange = (mode: StorageMode) => {
+    if (typeof window === 'undefined') return
+    
     setStorageMode(mode)
     localStorage.setItem('storage-mode', mode)
     

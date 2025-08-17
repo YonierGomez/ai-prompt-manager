@@ -98,28 +98,28 @@ export function AdvancedFilters({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* Quick Search */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-        <div className="flex-1 relative max-w-md">
+      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 items-start sm:items-center">
+        <div className="flex-1 relative w-full sm:max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar prompts..."
             value={filters.search}
             onChange={(e) => updateFilter('search', e.target.value)}
-            className="pl-10"
+            className="pl-10 h-10 sm:h-auto"
           />
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <Button
             variant={showAdvanced ? "default" : "outline"}
             size="sm"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 flex-1 sm:flex-none justify-center"
           >
             <SlidersHorizontal className="h-4 w-4" />
-            Filtros
+            <span className="text-sm">Filtros Avanzados</span>
             {hasActiveFilters() && (
               <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
                 !
@@ -132,10 +132,10 @@ export function AdvancedFilters({
               variant="ghost"
               size="sm"
               onClick={clearFilters}
-              className="text-muted-foreground"
+              className="text-muted-foreground p-2"
+              aria-label="Limpiar filtros"
             >
-              <X className="h-4 w-4 mr-1" />
-              Limpiar
+              <X className="h-4 w-4" />
             </Button>
           )}
         </div>
@@ -199,24 +199,24 @@ export function AdvancedFilters({
             transition={{ duration: 0.2 }}
           >
             <Card>
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Filter className="h-5 w-5" />
+              <CardHeader className="pb-3 sm:pb-4">
+                <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                  <Filter className="h-4 w-4 sm:h-5 sm:w-5" />
                   Filtros Avanzados
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 sm:space-y-6">
                 {/* Basic Filters Row */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   <div>
-                    <Label htmlFor="category" className="text-sm font-medium">
+                    <Label htmlFor="category" className="text-sm font-medium mb-2 block">
                       Categoría
                     </Label>
                     <Select 
                       value={filters.category} 
                       onValueChange={(value) => updateFilter('category', value)}
                     >
-                      <SelectTrigger id="category">
+                      <SelectTrigger id="category" className="h-10">
                         <SelectValue placeholder="Todas las categorías" />
                       </SelectTrigger>
                       <SelectContent>
@@ -231,14 +231,14 @@ export function AdvancedFilters({
                   </div>
 
                   <div>
-                    <Label htmlFor="aiModel" className="text-sm font-medium">
+                    <Label htmlFor="aiModel" className="text-sm font-medium mb-2 block">
                       Modelo de IA
                     </Label>
                     <Select 
                       value={filters.aiModel} 
                       onValueChange={(value) => updateFilter('aiModel', value)}
                     >
-                      <SelectTrigger id="aiModel">
+                      <SelectTrigger id="aiModel" className="h-10">
                         <SelectValue placeholder="Todos los modelos" />
                       </SelectTrigger>
                       <SelectContent>

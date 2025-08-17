@@ -47,10 +47,19 @@ class LocalPromptStorage {
   private readonly CURRENT_VERSION = '1.0.0'
 
   constructor() {
-    this.initializeStorage()
+    // Solo inicializar en el cliente
+    if (typeof window !== 'undefined') {
+      this.initializeStorage()
+    }
+  }
+
+  private isClient(): boolean {
+    return typeof window !== 'undefined' && typeof localStorage !== 'undefined'
   }
 
   private initializeStorage() {
+    if (!this.isClient()) return
+
     try {
       // Verificar si necesitamos migrar datos
       const currentVersion = localStorage.getItem(this.VERSION_KEY)
@@ -106,6 +115,8 @@ class LocalPromptStorage {
 
   // Gestión de Prompts
   getAllPrompts(): LocalPrompt[] {
+    if (!this.isClient()) return []
+    
     try {
       const data = localStorage.getItem(this.PROMPTS_KEY)
       return data ? JSON.parse(data) : []
@@ -116,11 +127,17 @@ class LocalPromptStorage {
   }
 
   getPromptById(id: string): LocalPrompt | null {
+    if (!this.isClient()) return null
+    
     const prompts = this.getAllPrompts()
     return prompts.find(p => p.id === id) || null
   }
 
   savePrompt(prompt: Omit<LocalPrompt, 'id' | 'createdAt' | 'updatedAt'>): LocalPrompt {
+    if (!this.isClient()) {
+      throw new Error('localStorage not available')
+    }
+    
     const newPrompt: LocalPrompt = {
       ...prompt,
       id: this.generateId(),
@@ -137,6 +154,8 @@ class LocalPromptStorage {
   }
 
   updatePrompt(id: string, updates: Partial<LocalPrompt>): LocalPrompt | null {
+    if (!this.isClient()) return null
+    
     const prompts = this.getAllPrompts()
     const index = prompts.findIndex(p => p.id === id)
     
@@ -156,6 +175,8 @@ class LocalPromptStorage {
   }
 
   deletePrompt(id: string): boolean {
+    if (!this.isClient()) return false
+    
     const prompts = this.getAllPrompts()
     const filtered = prompts.filter(p => p.id !== id)
     
@@ -168,6 +189,8 @@ class LocalPromptStorage {
   }
 
   toggleFavorite(id: string): boolean {
+    if (!this.isClient()) return false
+    
     const prompt = this.getPromptById(id)
     if (!prompt) return false
 
@@ -176,6 +199,8 @@ class LocalPromptStorage {
   }
 
   incrementUsage(id: string): void {
+    if (!this.isClient()) return
+    
     const prompt = this.getPromptById(id)
     if (prompt) {
       this.updatePrompt(id, { usageCount: prompt.usageCount + 1 })
@@ -248,6 +273,8 @@ class LocalPromptStorage {
 
   // Analytics
   getAnalytics(): LocalAnalytics {
+    if (!this.isClient()) return this.getDefaultAnalytics()
+    
     try {
       const data = localStorage.getItem(this.ANALYTICS_KEY)
       return data ? JSON.parse(data) : this.getDefaultAnalytics()
@@ -314,6 +341,8 @@ class LocalPromptStorage {
 
   // Utilidades privadas
   private savePrompts(prompts: LocalPrompt[]): void {
+    if (!this.isClient()) return
+    
     try {
       localStorage.setItem(this.PROMPTS_KEY, JSON.stringify(prompts))
     } catch (error) {
@@ -322,6 +351,8 @@ class LocalPromptStorage {
   }
 
   private saveAnalytics(analytics: LocalAnalytics): void {
+    if (!this.isClient()) return
+    
     try {
       localStorage.setItem(this.ANALYTICS_KEY, JSON.stringify(analytics))
     } catch (error) {
@@ -367,6 +398,8 @@ class LocalPromptStorage {
 
   // Limpiar datos
   clearAllData(): void {
+    if (!this.isClient()) return
+    
     localStorage.removeItem(this.PROMPTS_KEY)
     localStorage.removeItem(this.ANALYTICS_KEY)
     localStorage.removeItem(this.VERSION_KEY)
@@ -383,12 +416,17 @@ export function useLocalPrompts() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setPrompts(localPromptStorage.getAllPrompts())
+    // Solo ejecutar en el cliente
+    if (typeof window !== 'undefined') {
+      setPrompts(localPromptStorage.getAllPrompts())
+    }
     setLoading(false)
   }, [])
 
   const refreshPrompts = () => {
-    setPrompts(localPromptStorage.getAllPrompts())
+    if (typeof window !== 'undefined') {
+      setPrompts(localPromptStorage.getAllPrompts())
+    }
   }
 
   return {

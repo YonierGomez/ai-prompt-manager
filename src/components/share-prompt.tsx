@@ -118,15 +118,18 @@ export function SharePrompt({ prompt, onClose }: SharePromptProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-t-xl sm:rounded-lg p-4 sm:p-6 max-w-md w-full max-h-[85vh] sm:max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+          {/* Handle visual para móvil */}
+          <div className="sm:hidden absolute top-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+          
+          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2 mt-4 sm:mt-0">
             <Share2 className="h-5 w-5" />
             Compartir Prompt
           </h2>
           {onClose && (
-            <Button variant="ghost" size="sm" onClick={onClose}>
+            <Button variant="ghost" size="sm" onClick={onClose} className="p-2">
               <X className="h-4 w-4" />
             </Button>
           )}
@@ -134,17 +137,22 @@ export function SharePrompt({ prompt, onClose }: SharePromptProps) {
 
         {/* Información del prompt */}
         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 sm:p-4 mb-4">
-          <h3 className="font-semibold mb-2 text-sm sm:text-base">{prompt.title}</h3>
-          <div className="flex flex-wrap gap-2 mb-2">
+          <h3 className="font-semibold mb-2 text-sm sm:text-base line-clamp-2">{prompt.title}</h3>
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2">
             <Badge variant="outline" className="text-xs">{prompt.category}</Badge>
             <Badge variant="outline" className="text-xs">{prompt.model}</Badge>
           </div>
           <div className="flex flex-wrap gap-1">
-            {prompt.tags.map((tag, index) => (
+            {prompt.tags.slice(0, 3).map((tag, index) => (
               <Badge key={index} variant="secondary" className="text-xs">
                 #{tag}
               </Badge>
             ))}
+            {prompt.tags.length > 3 && (
+              <Badge variant="secondary" className="text-xs">
+                +{prompt.tags.length - 3}
+              </Badge>
+            )}
           </div>
         </div>
 
@@ -258,38 +266,37 @@ export function SharePrompt({ prompt, onClose }: SharePromptProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => shareOnSocial('twitter')}
-                className="flex items-center gap-2 text-xs sm:text-sm"
+                className="flex items-center justify-center gap-2 text-xs sm:text-sm p-3 sm:p-2"
               >
-                <Twitter className="h-3 w-3 sm:h-4 sm:w-4 text-blue-400" />
-                <span className="hidden sm:inline">Twitter</span>
-                <span className="sm:hidden">X</span>
+                <Twitter className="h-4 w-4 text-blue-400 flex-shrink-0" />
+                <span className="truncate">Twitter</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => shareOnSocial('facebook')}
-                className="flex items-center gap-2 text-xs sm:text-sm"
+                className="flex items-center justify-center gap-2 text-xs sm:text-sm p-3 sm:p-2"
               >
-                <Facebook className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
-                Facebook
+                <Facebook className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                <span className="truncate">Facebook</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => shareOnSocial('linkedin')}
-                className="flex items-center gap-2 text-xs sm:text-sm"
+                className="flex items-center justify-center gap-2 text-xs sm:text-sm p-3 sm:p-2"
               >
-                <Linkedin className="h-3 w-3 sm:h-4 sm:w-4 text-blue-700" />
-                LinkedIn
+                <Linkedin className="h-4 w-4 text-blue-700 flex-shrink-0" />
+                <span className="truncate">LinkedIn</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => shareOnSocial('whatsapp')}
-                className="flex items-center gap-2 text-xs sm:text-sm"
+                className="flex items-center justify-center gap-2 text-xs sm:text-sm p-3 sm:p-2"
               >
-                <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
-                WhatsApp
+                <MessageCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                <span className="truncate">WhatsApp</span>
               </Button>
             </div>
           </div>
@@ -300,10 +307,10 @@ export function SharePrompt({ prompt, onClose }: SharePromptProps) {
               variant="outline"
               size="sm"
               onClick={exportAsFile}
-              className="w-full flex items-center gap-2 text-xs sm:text-sm"
+              className="w-full flex items-center justify-center gap-2 text-xs sm:text-sm p-3 sm:p-2"
             >
-              <Download className="h-3 w-3 sm:h-4 sm:w-4" />
-              Exportar como archivo JSON
+              <Download className="h-4 w-4 flex-shrink-0" />
+              <span>Exportar como archivo JSON</span>
             </Button>
           </div>
         </div>
