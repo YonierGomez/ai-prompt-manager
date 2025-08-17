@@ -1,6 +1,6 @@
 # Multi-architecture build support
 # Soporta tanto x86_64 como ARM (arm64, armv7)
-FROM --platform=$BUILDPLATFORM node:20-alpine AS base
+FROM --platform=$BUILDPLATFORM node:24-alpine AS base
 
 # Declarar argumentos de build para multi-arquitectura
 ARG TARGETPLATFORM
@@ -10,6 +10,9 @@ ARG TARGETARCH
 
 # Mostrar información de la plataforma en build logs
 RUN echo "Building for $TARGETPLATFORM on $BUILDPLATFORM"
+
+# Actualizar npm a la versión más reciente
+RUN npm install -g npm@latest
 
 # Instalar dependencias del sistema necesarias para Tailwind CSS v4 y Prisma
 # Compatibles con múltiples arquitecturas

@@ -1,5 +1,5 @@
 # Dockerfile específico para ARM64 (Apple Silicon)
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 
 # Instalar dependencias del sistema
 RUN apk add --no-cache \
@@ -11,6 +11,9 @@ RUN apk add --no-cache \
     openssl \
     openssl-dev \
     sqlite
+
+# Actualizar npm a la versión más reciente
+RUN npm install -g npm@latest
 
 WORKDIR /app
 
@@ -39,7 +42,7 @@ ENV NODE_ENV=production
 RUN npm run build
 
 # Imagen de producción
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 WORKDIR /app
 
 # Instalar dependencias de runtime
