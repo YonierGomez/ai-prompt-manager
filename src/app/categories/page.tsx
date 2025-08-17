@@ -49,7 +49,7 @@ export default function CategoriesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filteredCategories, setFilteredCategories] = useState(DEFAULT_CATEGORIES.slice())
   const [prompts, setPrompts] = useState([])
-  const [realCategoryStats, setRealCategoryStats] = useState(categoryStats)
+  const [realCategoryStats, setRealCategoryStats] = useState<Record<string, number>>(categoryStats)
 
   // Cargar prompts reales y calcular estadísticas
   useEffect(() => {
@@ -61,8 +61,8 @@ export default function CategoriesPage() {
           setPrompts(data)
           
           // Calcular estadísticas reales
-          const stats = {}
-          data.forEach(prompt => {
+          const stats: Record<string, number> = {}
+          data.forEach((prompt: any) => {
             const category = prompt.category
             stats[category] = (stats[category] || 0) + 1
           })
