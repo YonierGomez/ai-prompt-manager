@@ -85,7 +85,34 @@ function NewPromptForm() {
     e.preventDefault()
     setIsLoading(true)
     
+    // Validación básica en el frontend
+    if (!formData.title.trim()) {
+      alert('El título es requerido')
+      setIsLoading(false)
+      return
+    }
+    
+    if (!formData.content.trim()) {
+      alert('El contenido es requerido')
+      setIsLoading(false)
+      return
+    }
+    
+    if (!formData.category.trim()) {
+      alert('La categoría es requerida')
+      setIsLoading(false)
+      return
+    }
+    
+    if (!formData.aiModel.trim()) {
+      alert('El modelo de IA es requerido')
+      setIsLoading(false)
+      return
+    }
+    
     try {
+      console.log('Enviando datos:', formData)
+      
       const response = await fetch('/api/prompts', {
         method: 'POST',
         headers: {
@@ -95,7 +122,9 @@ function NewPromptForm() {
       })
 
       if (!response.ok) {
-        throw new Error('Error al crear el prompt')
+        const errorData = await response.json().catch(() => ({}))
+        console.error('Error response:', response.status, errorData)
+        throw new Error(`Error al crear el prompt: ${errorData.error || 'Error desconocido'} (${response.status})`)
       }
 
       const newPrompt = await response.json()
@@ -105,7 +134,8 @@ function NewPromptForm() {
       router.push('/')
     } catch (error) {
       console.error('Error creating prompt:', error)
-      // Aquí podrías mostrar un toast de error
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+      alert(`Error: ${errorMessage}`)
     } finally {
       setIsLoading(false)
     }
