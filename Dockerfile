@@ -1,6 +1,6 @@
 # Multi-architecture build support
 # Soporta tanto x86_64 como ARM (arm64, armv7)
-FROM --platform=$BUILDPLATFORM node:24-alpine AS base
+FROM --platform=$BUILDPLATFORM node:20-alpine AS base
 
 # Declarar argumentos de build para multi-arquitectura
 ARG TARGETPLATFORM
@@ -22,6 +22,10 @@ RUN apk add --no-cache \
     openssl \
     openssl-dev \
     sqlite
+
+# Configurar variables de entorno para Prisma
+ENV PRISMA_CLI_BINARY_TARGETS="native,linux-musl-openssl-3.0.x"
+ENV DATABASE_URL="file:./prisma/dev.db"
 
 WORKDIR /app
 
@@ -60,12 +64,14 @@ RUN \
 # Copiar código fuente
 COPY . .
 
-# Generar el cliente de Prisma para la arquitectura específica
-RUN npx prisma generate
-
 # Variables de entorno para el build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV PRISMA_CLI_BINARY_TARGETS="native,linux-musl-openssl-3.0.x"
+ENV DATABASE_URL="file:./prisma/dev.db"
+
+# Generar el cliente de Prisma para la arquitectura específica
+RUN npx prisma generate --schema=./prisma/schema.prisma
 
 # Construir la aplicación con Tailwind CSS v4
 # El build se optimiza automáticamente para la arquitectura de destino
@@ -119,6 +125,8 @@ EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+ENV DATABASE_URL="file:./prisma/dev.db"
+ENV PRISMA_CLI_BINARY_TARGETS="native,linux-musl-openssl-3.0.x"
 
 # Comando para iniciar la aplicación con migraciones
 CMD ["./scripts/init-db.sh"]
