@@ -1,19 +1,35 @@
-# Dockerfile optimizado para tamaño mínimo
+# Dockerfile universal - funciona en cualquier máquina
 FROM node:22-alpine AS base
 
-# Instalar solo dependencias esenciales
+# Instalar dependencias del sistema
 RUN apk add --no-cache libc6-compat openssl sqlite
 
 WORKDIR /app
 
-# Stage 1: Dependencias de producción
+# Stage 1: Instalar dependencias
 FROM base AS deps
 COPY package*.json ./
-RUN npm ci --omit=dev --no-audit --no-fund --prefer-offline && \
-    npm cache clean --force && \
-    rm -rf ~/.npm
+RUN npm ci --no-audit --no-fund && \
+    npm cache clean --force
 
-# Stage 2: Imagen final
+# Stage 2: Build de la aplicación
+FROM base AS builder
+COPY package*.json ./
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Variables de entorno para el build
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+# Generar Prisma client
+RUN npx prisma generate
+
+# Build de Next.js
+RUN npm run build
+
+# Stage 3: Imagen final de producción
 FROM base AS runner
 
 # Crear usuario no-root
@@ -27,20 +43,18 @@ ENV NODE_ENV=production \
     PORT=3000 \
     HOSTNAME="0.0.0.0"
 
-# Copiar solo las dependencias de producción necesarias
+# Copiar solo dependencias de producción
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
 
-# Copiar archivos de aplicación
-COPY --chown=nextjs:nodejs .next/standalone ./
-COPY --chown=nextjs:nodejs .next/static ./.next/static
-COPY --chown=nextjs:nodejs public ./public
-COPY --chown=nextjs:nodejs prisma ./prisma
-COPY --chown=nextjs:nodejs scripts/init-db.sh ./scripts/init-db.sh
+# Copiar archivos de aplicación desde el builder
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/scripts/init-db.sh ./scripts/init-db.sh
 
-# Generar Prisma client y limpiar
-RUN npx prisma generate && \
-    rm -rf /tmp/* /root/.cache /root/.npm && \
-    chmod +x ./scripts/init-db.sh && \
+# Configurar permisos
+RUN chmod +x ./scripts/init-db.sh && \
     mkdir -p ./prisma
 
 USER nextjs
