@@ -15,7 +15,6 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma db push --force-reset && npm run db:seed",
     "docker:build": "docker build -t ai-prompt-manager .",
-    "docker:build-multiarch": "./build-multiarch.sh ai-prompt-manager latest",
     "docker:run": "docker run -p 3000:3000 ai-prompt-manager",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",

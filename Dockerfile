@@ -1,136 +1,50 @@
-# Multi-architecture build support
-# Soporta tanto x86_64 como ARM (arm64, armv7)
-FROM --platform=$BUILDPLATFORM node:22-alpine AS base
+# Dockerfile optimizado para tamaño mínimo
+FROM node:22-alpine AS base
 
-# Declarar argumentos de build para multi-arquitectura
-ARG TARGETPLATFORM
-ARG BUILDPLATFORM
-ARG TARGETOS
-ARG TARGETARCH
-
-# Mostrar información de la plataforma en build logs
-RUN echo "Building for $TARGETPLATFORM on $BUILDPLATFORM"
-
-# Actualizar npm a la versión más reciente
-RUN npm install -g npm@latest
-
-# Instalar dependencias del sistema necesarias para Tailwind CSS v4 y Prisma
-# Compatibles con múltiples arquitecturas
-RUN apk add --no-cache \
-    libc6-compat \
-    ca-certificates \
-    python3 \
-    make \
-    g++ \
-    openssl \
-    openssl-dev \
-    sqlite
-
-# Variables de entorno específicas para ARM64
-ENV PRISMA_FORCE_NAPI=true
-ENV PRISMA_SKIP_POSTINSTALL_GENERATE=false
+# Instalar solo dependencias esenciales
+RUN apk add --no-cache libc6-compat openssl sqlite
 
 WORKDIR /app
 
-# Instalar dependencias de producción
+# Stage 1: Dependencias de producción
 FROM base AS deps
-COPY package.json package-lock.json* ./
+COPY package*.json ./
+RUN npm ci --omit=dev --no-audit --no-fund --prefer-offline && \
+    npm cache clean --force && \
+    rm -rf ~/.npm
 
-# Instalar dependencias optimizadas para la arquitectura de destino
-RUN \
-  if [ -f package-lock.json ]; then \
-    npm ci --omit=dev --ignore-scripts --platform=$TARGETPLATFORM; \
-  else \
-    echo "Lockfile not found." && npm install --omit=dev --ignore-scripts --platform=$TARGETPLATFORM; \
-  fi
-
-# Build de la aplicación
-FROM base AS builder
-WORKDIR /app
-
-# Copiar archivos de configuración
-COPY package.json package-lock.json* ./
-COPY tailwind.config.ts ./
-COPY postcss.config.js ./
-COPY next.config.js ./
-COPY tsconfig.json ./
-
-# Instalar todas las dependencias (incluyendo devDependencies)
-# Optimizado para la arquitectura de destino
-RUN \
-  if [ -f package-lock.json ]; then \
-    npm ci --ignore-scripts --platform=$TARGETPLATFORM; \
-  else \
-    echo "Lockfile not found." && npm install --ignore-scripts --platform=$TARGETPLATFORM; \
-  fi
-
-# Copiar código fuente
-COPY . .
-
-# Variables de entorno para el build
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-ENV DATABASE_URL="file:./dev.db"
-ENV PRISMA_FORCE_NAPI=true
-
-# Generar el cliente de Prisma para la arquitectura específica
-# Forzar regeneración para asegurar compatibilidad con la arquitectura target
-RUN rm -rf node_modules/.prisma || true
-RUN npx prisma generate
-
-# Construir la aplicación con Tailwind CSS v4
-# El build se optimiza automáticamente para la arquitectura de destino
-RUN npm run build
-
-# Imagen de producción - optimizada para múltiples arquitecturas
+# Stage 2: Imagen final
 FROM base AS runner
-WORKDIR /app
 
-# Instalar dependencias de runtime para Prisma
-# SQLite funciona nativamente en todas las arquitecturas
-RUN apk add --no-cache \
-    openssl \
-    ca-certificates \
-    sqlite
+# Crear usuario no-root
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
+# Variables de entorno
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    DATABASE_URL="file:./prisma/dev.db" \
+    PORT=3000 \
+    HOSTNAME="0.0.0.0"
 
-# Crear usuario no-root para seguridad
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# Copiar solo las dependencias de producción necesarias
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
 
-# Copiar archivos públicos
-COPY --from=builder /app/public ./public
+# Copiar archivos de aplicación
+COPY --chown=nextjs:nodejs .next/standalone ./
+COPY --chown=nextjs:nodejs .next/static ./.next/static
+COPY --chown=nextjs:nodejs public ./public
+COPY --chown=nextjs:nodejs prisma ./prisma
+COPY --chown=nextjs:nodejs scripts/init-db.sh ./scripts/init-db.sh
 
-# Configurar permisos para el directorio .next
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
-
-# Copiar archivos de build con permisos correctos
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# Copiar esquema de Prisma y base de datos
-COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-
-# Copiar script de inicialización
-COPY --from=builder --chown=nextjs:nodejs /app/scripts/init-db.sh ./scripts/init-db.sh
-
-# Crear directorio para la base de datos con permisos correctos
-RUN mkdir -p /app/prisma && chown -R nextjs:nodejs /app/prisma
-
-# Hacer ejecutable el script de inicialización
-RUN chmod +x ./scripts/init-db.sh
+# Generar Prisma client y limpiar
+RUN npx prisma generate && \
+    rm -rf /tmp/* /root/.cache /root/.npm && \
+    chmod +x ./scripts/init-db.sh && \
+    mkdir -p ./prisma
 
 USER nextjs
 
 EXPOSE 3000
 
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-ENV DATABASE_URL="file:./dev.db"
-
-# Comando para iniciar la aplicación con migraciones
 CMD ["./scripts/init-db.sh"]

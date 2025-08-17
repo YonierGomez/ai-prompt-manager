@@ -28,4 +28,10 @@ else
 fi
 
 echo "✅ Base de datos configurada correctamente"
-echo "🎉 Puedes usar 'npm run dev' para iniciar la aplicación"
+echo "🎉 Iniciando aplicación..."
+
+# Volver al directorio raíz de la aplicación
+cd /app
+
+# Iniciar la aplicación Next.js en modo standalone
+exec node server.js
