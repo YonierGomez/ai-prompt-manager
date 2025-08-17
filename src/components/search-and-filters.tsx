@@ -105,13 +105,13 @@ export function SearchAndFilters({ onSearch, onFilter, className }: SearchAndFil
       {/* Barra de búsqueda */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4 z-10" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4 z-10 pointer-events-none" />
           <Input
             type="text"
             placeholder="Buscar prompts..."
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full px-4 py-3 pl-10 pr-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-400 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 focus:outline-none transition-all duration-200 text-sm sm:text-base min-h-[48px]"
+            className="w-full px-4 py-3 pl-12 pr-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-400 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 focus:outline-none transition-all duration-200 text-sm sm:text-base min-h-[48px]"
           />
         </div>
         <button

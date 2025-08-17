@@ -90,19 +90,50 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
 
   const handleShare = async () => {
     if (onShare) return onShare(prompt)
+    
     const shareData = { 
-      title: prompt.title, 
-      text: prompt.description || `Prompt: ${prompt.title}`, 
+      title: `${prompt.title} - Prompt Studio`, 
+      text: prompt.description || `Descubre este prompt: ${prompt.title}. Categoría: ${prompt.category}, Modelo: ${prompt.aiModel}`, 
       url: `${window.location.origin}/prompts/${prompt.id}` 
     }
+    
     try { 
-      if (navigator.share && navigator.canShare(shareData)) { 
-        await navigator.share(shareData) 
-      } else { 
-        await navigator.clipboard.writeText(shareData.url) 
+      // Usar Web Share API si está disponible (móviles nativos)
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) { 
+        await navigator.share(shareData)
+        console.log('Compartido exitosamente via Web Share API')
+      } 
+      // Fallback para móviles sin Web Share API
+      else if (navigator.share) {
+        await navigator.share({
+          title: shareData.title,
+          text: shareData.text,
+          url: shareData.url
+        })
+        console.log('Compartido exitosamente via Web Share API (fallback)')
+      }
+      // Fallback para desktop/browsers sin soporte
+      else { 
+        await navigator.clipboard.writeText(shareData.url)
+        alert('🔗 Enlace copiado al portapapeles\n\nPuedes pegarlo en cualquier aplicación para compartir este prompt.')
       } 
     } catch (err) { 
-      console.error('Error sharing:', err) 
+      console.error('Error sharing:', err)
+      // Último fallback - copiar al clipboard
+      try {
+        await navigator.clipboard.writeText(shareData.url)
+        alert('🔗 Enlace copiado al portapapeles')
+      } catch (clipErr) {
+        console.error('Error copying to clipboard:', clipErr)
+        // Manual fallback
+        const textArea = document.createElement('textarea')
+        textArea.value = shareData.url
+        document.body.appendChild(textArea)
+        textArea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textArea)
+        alert('🔗 Enlace copiado al portapapeles')
+      }
     }
   }
 
@@ -212,7 +243,113 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
           whileTap={{ scale: 0.99 }}
           className="group relative overflow-hidden rounded-lg sm:rounded-xl bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/90 backdrop-blur-xl border border-slate-700/50 shadow-xl shadow-black/20 transition-all duration-300 hover:shadow-purple-500/10"
         >
-          <div className="flex flex-col lg:flex-row lg:items-center min-h-[120px] sm:min-h-[140px]">
+          {/* Mobile Layout */}
+          <div className="lg:hidden">
+            <div className="p-3 border-b border-slate-700/30">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1 min-w-0 pr-2">
+                  <h3 className="text-sm font-semibold text-slate-100 line-clamp-1 leading-snug group-hover:text-white transition-colors">
+                    {prompt.title}
+                  </h3>
+                  {prompt.description && (
+                    <p className="text-slate-400 text-xs mt-1 line-clamp-1">
+                      {prompt.description}
+                    </p>
+                  )}
+                </div>
+                
+                {/* Favorite Badge - Mobile */}
+                {isFavorite && (
+                  <div className="flex-shrink-0">
+                    <ClientIcon Icon={Star} className="h-3 w-3 text-amber-400 fill-current" />
+                  </div>
+                )}
+              </div>
+              
+              {/* Compact Tags and Info Row */}
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-purple-600/20 text-purple-200 border border-purple-500/30">
+                    {prompt.category}
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-300 border border-slate-600/50">
+                    <ClientIcon Icon={Zap} className="h-2.5 w-2.5" />
+                    {(AI_MODELS.find(m => m.value === prompt.aiModel)?.label?.split(' ')[0]) || prompt.aiModel}
+                  </span>
+                </div>
+                <span className="text-slate-500">
+                  {formatDate(prompt.createdAt)}
+                </span>
+              </div>
+            </div>
+            
+            {/* Mobile Actions Row */}
+            <div className="flex items-center justify-between p-3">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowFullContent(true)}
+                  className="inline-flex items-center justify-center p-2 rounded-lg font-medium text-sm transition-all duration-200 text-purple-400 hover:bg-purple-500/10 hover:text-purple-300"
+                  aria-label="Ver contenido completo"
+                >
+                  <ClientIcon Icon={Maximize2} className="h-3 w-3" />
+                </button>
+                
+                <button
+                  onClick={toggleFavorite}
+                  className={cn(
+                    'inline-flex items-center justify-center p-2 rounded-lg font-medium text-sm transition-all duration-200',
+                    isFavorite 
+                      ? 'text-amber-400 bg-amber-400/10 hover:bg-amber-400/20' 
+                      : 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-300'
+                  )}
+                  aria-label={isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+                >
+                  <Heart className={cn('h-3 w-3', isFavorite && 'fill-current')} />
+                </button>
+                
+                <button
+                  onClick={handleCopy}
+                  disabled={copyStatus === 'copying'}
+                  className={cn(
+                    'inline-flex items-center justify-center p-2 rounded-lg font-medium text-sm transition-all duration-200',
+                    copyStatus === 'success' 
+                      ? 'text-green-400 bg-green-500/20' 
+                      : copyStatus === 'error'
+                      ? 'text-red-400 bg-red-500/20'
+                      : 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-300'
+                  )}
+                  aria-label={copyStatus === 'success' ? 'Copiado' : 'Copiar'}
+                >
+                  {copyStatus === 'copying' ? (
+                    <ClientIcon Icon={Loader2} className="h-3 w-3 animate-spin" />
+                  ) : copyStatus === 'success' ? (
+                    <ClientIcon Icon={Check} className="h-3 w-3" />
+                  ) : (
+                    <ClientIcon Icon={Copy} className="h-3 w-3" />
+                  )}
+                </button>
+                
+                <button 
+                  onClick={handleShare} 
+                  className="inline-flex items-center justify-center p-2 rounded-lg font-medium text-sm transition-all duration-200 text-slate-400 hover:bg-slate-700/50 hover:text-slate-300" 
+                  aria-label="Compartir"
+                >
+                  <ClientIcon Icon={Share2} className="h-3 w-3" />
+                </button>
+              </div>
+              
+              <a 
+                href={`/prompts/${prompt.id}`} 
+                className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg font-medium text-xs transition-all duration-200 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 shadow-lg"
+              >
+                <ClientIcon Icon={ExternalLink} className="h-3 w-3" />
+                Ver
+              </a>
+            </div>
+          </div>
+          
+          {/* Desktop/Tablet Layout */}
+          <div className="hidden lg:flex lg:items-center min-h-[120px] sm:min-h-[140px]">
             {/* Left Section - Header Info */}
             <div className="flex-1 p-3 sm:p-4 lg:p-6 lg:pr-4 min-w-0">
               <div className="flex items-start justify-between mb-2 sm:mb-3">
@@ -245,7 +382,7 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
                 </span>
                 
                 <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-medium bg-slate-700/50 text-slate-300 border border-slate-600/50" style={{ color: aiModelInfo?.color }}>
-                  <Zap className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                  <ClientIcon Icon={Zap} className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                   <span className="hidden sm:inline">{aiModelInfo?.label || prompt.aiModel}</span>
                   <span className="sm:hidden">{aiModelInfo?.label?.split(' ')[0] || prompt.aiModel}</span>
                 </span>
@@ -357,7 +494,7 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
                     )}
                     aria-label={isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
                   >
-                    <Heart className={cn('h-3 w-3 sm:h-4 sm:w-4', isFavorite && 'fill-current')} />
+                    <ClientIcon Icon={Heart} className={cn('h-3 w-3 sm:h-4 sm:w-4', isFavorite && 'fill-current')} />
                   </button>
                   
                   <button 
