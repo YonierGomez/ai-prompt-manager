@@ -104,8 +104,14 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 
+# Copiar script de inicialización
+COPY --from=builder --chown=nextjs:nodejs /app/scripts/init-db.sh ./scripts/init-db.sh
+
 # Crear directorio para la base de datos con permisos correctos
 RUN mkdir -p /app/prisma && chown -R nextjs:nodejs /app/prisma
+
+# Hacer ejecutable el script de inicialización
+RUN chmod +x ./scripts/init-db.sh
 
 USER nextjs
 
@@ -114,5 +120,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Comando para iniciar la aplicación
-CMD ["node", "server.js"]
+# Comando para iniciar la aplicación con migraciones
+CMD ["./scripts/init-db.sh"]

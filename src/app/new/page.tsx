@@ -48,7 +48,7 @@ function NewPromptForm() {
   const [currentStep, setCurrentStep] = useState(1)
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     basic: true,
-    content: false,
+    content: true,
     advanced: false
   })
   
