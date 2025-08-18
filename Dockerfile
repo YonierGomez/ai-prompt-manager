@@ -55,11 +55,13 @@ COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/package*.json ./
 COPY --from=builder --chown=nextjs:nodejs /app/scripts/init-db.sh ./scripts/init-db.sh
 COPY --from=builder --chown=nextjs:nodejs /app/.env.docker ./.env
+COPY --from=builder --chown=nextjs:nodejs /app/.env.production ./.env.production
 
 # Configurar permisos y crear directorios para datos persistentes
 RUN chmod +x ./scripts/init-db.sh && \
     mkdir -p ./data ./uploads ./prisma && \
-    chown -R nextjs:nodejs ./data ./uploads ./prisma
+    chown -R nextjs:nodejs ./data ./uploads ./prisma && \
+    chmod 755 ./data ./uploads ./prisma
 
 USER nextjs
 
