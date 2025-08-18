@@ -52,6 +52,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/scripts/init-db.sh ./scripts/init-db.sh
+COPY --from=builder --chown=nextjs:nodejs /app/.env.docker ./.env
 
 # Configurar permisos y crear directorios para datos persistentes
 RUN chmod +x ./scripts/init-db.sh && \

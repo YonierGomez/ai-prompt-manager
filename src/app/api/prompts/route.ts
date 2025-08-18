@@ -69,8 +69,18 @@ export async function GET(request: NextRequest) {
 // POST - Crear nuevo prompt
 export async function POST(request: NextRequest) {
   try {
+    console.log('🚀 Iniciando creación de prompt...')
+    
     const body = await request.json()
+    console.log('📝 Datos recibidos:', body)
+    
     const validatedData = createPromptSchema.parse(body)
+    console.log('✅ Datos validados:', validatedData)
+
+    // Verificar conexión a la base de datos
+    console.log('🔗 Conectando a la base de datos...')
+    await prisma.$connect()
+    console.log('✅ Conexión a la base de datos exitosa')
 
     const prompt = await prisma.prompt.create({
       data: {
@@ -78,23 +88,40 @@ export async function POST(request: NextRequest) {
         tags: validatedData.tags.join(',')
       }
     })
+    
+    console.log('✅ Prompt creado exitosamente:', prompt.id)
 
     return NextResponse.json({
       ...prompt,
       tags: prompt.tags ? prompt.tags.split(',').map((tag: string) => tag.trim()) : []
     }, { status: 201 })
   } catch (error) {
+    console.error('❌ Error detallado en POST /api/prompts:', error)
+    
     if (error instanceof z.ZodError) {
+      console.error('❌ Error de validación Zod:', error.issues)
       return NextResponse.json(
         { error: 'Datos inválidos', details: error.issues },
         { status: 400 }
       )
     }
 
-    console.error('Error creating prompt:', error)
+    // Log más detallado del error
+    if (error instanceof Error) {
+      console.error('❌ Error name:', error.name)
+      console.error('❌ Error message:', error.message)
+      console.error('❌ Error stack:', error.stack)
+    }
+
     return NextResponse.json(
-      { error: 'Error interno del servidor' },
+      { 
+        error: 'Error interno del servidor',
+        message: error instanceof Error ? error.message : 'Error desconocido',
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     )
+  } finally {
+    await prisma.$disconnect()
   }
 }
