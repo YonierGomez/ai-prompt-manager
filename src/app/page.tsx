@@ -23,7 +23,12 @@ import {
   Clock,
   Search,
   Grid3X3,
-  List
+  List,
+  Trash2,
+  CheckSquare,
+  Square,
+  X,
+  Loader2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -67,6 +72,9 @@ export default function HomePage() {
   })
   const [selectedPrompt, setSelectedPrompt] = useState<any>(null)
   const [showShare, setShowShare] = useState(false)
+  const [selectedPrompts, setSelectedPrompts] = useState<Set<string>>(new Set())
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Cargar prompts desde la API
   useEffect(() => {
@@ -194,6 +202,63 @@ export default function HomePage() {
     }
     setSelectedPrompt(promptForShare)
     setShowShare(true)
+  }
+
+  // Funciones para selección múltiple
+  const toggleSelection = (promptId: string) => {
+    const newSelected = new Set(selectedPrompts)
+    if (newSelected.has(promptId)) {
+      newSelected.delete(promptId)
+    } else {
+      newSelected.add(promptId)
+    }
+    setSelectedPrompts(newSelected)
+  }
+
+  const selectAll = () => {
+    setSelectedPrompts(new Set(filteredPrompts.map(p => p.id)))
+  }
+
+  const clearSelection = () => {
+    setSelectedPrompts(new Set())
+    setIsSelectionMode(false)
+  }
+
+  const deleteSelectedPrompts = async () => {
+    if (selectedPrompts.size === 0) return
+    
+    const confirmMessage = `¿Estás seguro de que quieres eliminar ${selectedPrompts.size} prompt${selectedPrompts.size > 1 ? 's' : ''}?`
+    if (!confirm(confirmMessage)) return
+
+    setIsDeleting(true)
+    
+    try {
+      const response = await fetch('/api/prompts/bulk-delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          promptIds: Array.from(selectedPrompts)
+        })
+      })
+
+      if (response.ok) {
+        // Actualizar el estado local eliminando los prompts seleccionados
+        setPrompts(prompts.filter(prompt => !selectedPrompts.has(prompt.id)))
+        setSelectedPrompts(new Set())
+        setIsSelectionMode(false)
+        alert(`${selectedPrompts.size} prompt${selectedPrompts.size > 1 ? 's' : ''} eliminado${selectedPrompts.size > 1 ? 's' : ''} exitosamente`)
+      } else {
+        const error = await response.json()
+        alert(`Error al eliminar prompts: ${error.message || 'Error desconocido'}`)
+      }
+    } catch (error) {
+      console.error('Error deleting prompts:', error)
+      alert('Error al eliminar prompts')
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   const quickActions = [
@@ -360,33 +425,82 @@ export default function HomePage() {
             )}
           </div>
           <div className="flex items-center gap-3">
-            {/* View Mode Toggle */}
-            <div className="flex items-center gap-1 bg-slate-800/50 rounded-lg p-1">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`inline-flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                  viewMode === 'grid'
-                    ? 'bg-purple-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-300'
-                }`}
-                title="Vista en cuadrícula"
-              >
-                <Grid3X3 className="h-4 w-4" />
-                <span className="hidden sm:inline">Grid</span>
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`inline-flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                  viewMode === 'list'
-                    ? 'bg-slate-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-300'
-                }`}
-                title="Vista en lista"
-              >
-                <List className="h-4 w-4" />
-                <span className="hidden sm:inline">Lista</span>
-              </button>
-            </div>
+            {/* Selection Mode Controls */}
+            {isSelectionMode ? (
+              <div className="flex items-center gap-2 bg-slate-800/50 rounded-lg p-1">
+                <button
+                  onClick={selectAll}
+                  className="inline-flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300"
+                  title="Seleccionar todos"
+                >
+                  <CheckSquare className="h-4 w-4" />
+                  <span className="hidden sm:inline">Todos</span>
+                </button>
+                <button
+                  onClick={clearSelection}
+                  className="inline-flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-slate-400 hover:text-slate-300"
+                  title="Cancelar selección"
+                >
+                  <X className="h-4 w-4" />
+                  <span className="hidden sm:inline">Cancelar</span>
+                </button>
+                <button
+                  onClick={deleteSelectedPrompts}
+                  disabled={selectedPrompts.size === 0 || isDeleting}
+                  className="inline-flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-red-400 hover:bg-red-500/10 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={`Eliminar ${selectedPrompts.size} seleccionados`}
+                >
+                  {isDeleting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
+                  <span className="hidden sm:inline">
+                    {isDeleting ? 'Eliminando...' : `Eliminar (${selectedPrompts.size})`}
+                  </span>
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Selection Mode Toggle */}
+                <button
+                  onClick={() => setIsSelectionMode(true)}
+                  className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-slate-400 hover:bg-slate-700/50 hover:text-slate-300"
+                  title="Modo selección"
+                >
+                  <CheckSquare className="h-4 w-4" />
+                  <span className="hidden sm:inline">Seleccionar</span>
+                </button>
+
+                {/* View Mode Toggle */}
+                <div className="flex items-center gap-1 bg-slate-800/50 rounded-lg p-1">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`inline-flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                      viewMode === 'grid'
+                        ? 'bg-purple-600 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-slate-300'
+                    }`}
+                    title="Vista en cuadrícula"
+                  >
+                    <Grid3X3 className="h-4 w-4" />
+                    <span className="hidden sm:inline">Grid</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`inline-flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                      viewMode === 'list'
+                        ? 'bg-slate-600 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-slate-300'
+                    }`}
+                    title="Vista en lista"
+                  >
+                    <List className="h-4 w-4" />
+                    <span className="hidden sm:inline">Lista</span>
+                  </button>
+                </div>
+              </>
+            )}
             
             {/* Results Count */}
             <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-slate-300 border border-white/20">
@@ -450,6 +564,9 @@ export default function HomePage() {
                   viewMode={viewMode}
                   onShare={() => sharePrompt(prompt)}
                   onToggleFavorite={() => toggleFavorite(prompt.id)}
+                  isSelected={selectedPrompts.has(prompt.id)}
+                  isSelectionMode={isSelectionMode}
+                  onToggleSelection={toggleSelection}
                 />
               </motion.div>
             ))}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Copy, Star, ExternalLink, Share2, Heart, Zap, Clock, Eye, FileText, Code2, Maximize2, X, Check, Loader2 } from 'lucide-react'
+import { Copy, Star, ExternalLink, Share2, Heart, Zap, Clock, Eye, FileText, Code2, Maximize2, X, Check, Loader2, CheckSquare, Square } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn, formatDate, truncateText, AI_MODELS } from '@/lib/utils'
 import { copyToClipboard, showManualCopyModal } from '@/lib/clipboard'
@@ -27,9 +27,12 @@ interface PromptCardProps {
   onCopy?: (p: Prompt) => void
   onShare?: (p: Prompt) => void
   onToggleFavorite?: (p: Prompt) => void
+  isSelected?: boolean
+  isSelectionMode?: boolean
+  onToggleSelection?: (promptId: string) => void
 }
 
-export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite }: PromptCardProps) {
+export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite, isSelected = false, isSelectionMode = false, onToggleSelection }: PromptCardProps) {
   const [isFavorite, setIsFavorite] = useState(prompt.isFavorite)
   const [isExpanded, setIsExpanded] = useState(false)
   const [isMarkdownView, setIsMarkdownView] = useState(true)
@@ -581,9 +584,29 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
         whileTap={{ scale: 0.98 }}
         className="group relative overflow-hidden rounded-xl sm:rounded-2xl p-4 sm:p-6 bg-gradient-to-br from-slate-900/80 via-slate-800/60 to-slate-900/40 backdrop-blur-xl border border-slate-700/50 shadow-2xl shadow-black/40 transition-all duration-300 h-[460px] sm:h-[480px] flex flex-col hover:shadow-purple-500/20"
       >
+        {/* Selection Checkbox */}
+        {isSelectionMode && (
+          <div className="absolute left-3 sm:left-4 top-3 sm:top-4 z-10">
+            <button
+              onClick={() => onToggleSelection?.(prompt.id)}
+              className={cn(
+                'inline-flex items-center justify-center w-6 h-6 rounded-md border-2 transition-all duration-200',
+                isSelected
+                  ? 'bg-purple-600 border-purple-600 text-white'
+                  : 'border-slate-400 hover:border-purple-400 bg-slate-800/80 backdrop-blur-sm'
+              )}
+            >
+              {isSelected && <Check className="h-3 w-3" />}
+            </button>
+          </div>
+        )}
+
         {/* Favorite Badge */}
         {isFavorite && (
-          <div className="absolute right-3 sm:right-4 top-3 sm:top-4 z-10">
+          <div className={cn(
+            "absolute top-3 sm:top-4 z-10",
+            isSelectionMode ? "right-3 sm:right-4" : "right-3 sm:right-4"
+          )}>
             <div className="inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md text-xs font-semibold bg-amber-500/20 text-amber-200 border border-amber-500/30">
               <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-current mr-0.5 sm:mr-1" />
               <span className="hidden sm:inline">Favorito</span>

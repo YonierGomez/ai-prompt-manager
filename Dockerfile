@@ -44,7 +44,6 @@ RUN addgroup --system --gid 1001 nodejs && \
 # Variables de entorno
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
-    DATABASE_URL="file:./data/dev.db" \
     PORT=3000 \
     HOSTNAME="0.0.0.0"
 
@@ -59,8 +58,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/.env.docker ./.env
 
 # Configurar permisos y crear directorios para datos persistentes
 RUN chmod +x ./scripts/init-db.sh && \
-    mkdir -p ./data ./uploads && \
-    chown -R nextjs:nodejs ./data ./uploads
+    mkdir -p ./data ./uploads ./prisma && \
+    chown -R nextjs:nodejs ./data ./uploads ./prisma
 
 USER nextjs
 
