@@ -116,6 +116,19 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
+    
+    // First check if the prompt exists
+    const existingPrompt = await prisma.prompt.findUnique({
+      where: { id }
+    })
+
+    if (!existingPrompt) {
+      return NextResponse.json(
+        { error: 'Prompt no encontrado' },
+        { status: 404 }
+      )
+    }
+
     await prisma.prompt.delete({
       where: { id }
     })

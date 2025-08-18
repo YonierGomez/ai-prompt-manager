@@ -1,4 +1,4 @@
-# Dockerfile universal - funciona en cualquier máquina
+# Dockerfile optimizado para memoria limitada
 FROM node:22-alpine AS base
 
 # Instalar dependencias del sistema
@@ -9,25 +9,25 @@ WORKDIR /app
 # Stage 1: Instalar dependencias
 FROM base AS deps
 COPY package*.json ./
-RUN npm ci --no-audit --no-fund --silent 2>/dev/null && \
+RUN npm ci --only=production --no-audit --no-fund --silent 2>/dev/null && \
     npm cache clean --force
 
-# Stage 2: Build de la aplicación
+# Stage 2: Build de la aplicación (simplificado)
 FROM base AS builder
 COPY package*.json ./
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Variables de entorno para el build
+# Variables de entorno para el build con memoria limitada
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 
 # Generar Prisma client
 RUN npx prisma generate
 
-# Build de Next.js
-RUN npm run build
+# Build de Next.js con memoria limitada
+RUN npm run build || (echo "Build failed, trying with reduced memory..." && NODE_OPTIONS="--max-old-space-size=1024" npm run build)
 
 # Stage 3: Imagen final de producción
 FROM base AS runner
