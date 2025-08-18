@@ -6,13 +6,35 @@ const globalForPrisma = globalThis as unknown as {
 
 // Configuración simplificada y robusta para ARM64
 const createPrismaClient = () => {
+  // Determinar la URL de la base de datos en runtime
+  let databaseUrl = process.env.DATABASE_URL
+  
+  // Si no hay DATABASE_URL, intentar detectar la ubicación correcta
+  if (!databaseUrl) {
+    // En Docker con volumen en /app/prisma
+    if (typeof window === 'undefined') {
+      const fs = require('fs')
+      const path = require('path')
+      
+      if (fs.existsSync('/app/prisma') && fs.existsSync(path.join(process.cwd(), 'prisma'))) {
+        databaseUrl = 'file:./prisma/dev.db'
+      } else {
+        databaseUrl = 'file:./data/dev.db'
+      }
+    } else {
+      databaseUrl = 'file:./prisma/dev.db'
+    }
+  }
+  
+  console.log('🔗 Prisma conectando a:', databaseUrl)
+  
   try {
     return new PrismaClient({
       log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
       errorFormat: 'pretty',
       datasources: {
         db: {
-          url: process.env.DATABASE_URL || 'file:./prisma/dev.db'
+          url: databaseUrl
         }
       }
     })
@@ -20,12 +42,7 @@ const createPrismaClient = () => {
     console.warn('Error creating Prisma client with full config, trying minimal config:', error)
     // Fallback con configuración mínima
     return new PrismaClient({
-      errorFormat: 'pretty',
-      datasources: {
-        db: {
-          url: process.env.DATABASE_URL || 'file:./prisma/dev.db'
-        }
-      }
+      errorFormat: 'pretty'
     })
   }
 }
