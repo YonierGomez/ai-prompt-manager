@@ -27,13 +27,15 @@ COPY . .
 # Variables de entorno para el build con memoria limitada
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-ENV NODE_OPTIONS="--max-old-space-size=1024"
+ENV NODE_OPTIONS="--max-old-space-size=512"
 
 # Generar Prisma client
 RUN npx prisma generate
 
-# Build de Next.js con memoria limitada y manejo de errores
-RUN npm run build 2>/dev/null || (echo "Build failed with 1GB, trying with 512MB..." && NODE_OPTIONS="--max-old-space-size=512" npm run build)
+# Build de Next.js con memoria muy limitada y optimizaciones adicionales
+RUN NODE_OPTIONS="--max-old-space-size=512 --optimize-for-size" npm run build || \
+    (echo "Build failed with 512MB, trying with 256MB and additional optimizations..." && \
+     NODE_OPTIONS="--max-old-space-size=256 --optimize-for-size --gc-interval=100" npm run build)
 
 # Stage 4: Imagen final de producción
 FROM base AS runner
