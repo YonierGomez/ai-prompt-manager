@@ -58,7 +58,7 @@ Proporciona ejemplos de código mejorado y explica el razonamiento detrás de ca
 
 **Canales de adquisición:**
 - SEO y SEM
-- Redes sociales (LinkedIn, Twitter, Instagram)
+- Redes sociales (LinkedIn, X, Instagram)
 - Email marketing
 - Marketing de influencers
 - Partnerships estratégicos

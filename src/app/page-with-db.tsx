@@ -151,7 +151,6 @@ export default function HomePage() {
   const copyPrompt = async (content: string) => {
     try {
       await navigator.clipboard.writeText(content)
-      alert('¡Prompt copiado al portapapeles! 📋')
     } catch (err) {
       alert('Error al copiar el prompt')
     }

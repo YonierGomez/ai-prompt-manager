@@ -179,9 +179,7 @@ export default function HomePage() {
   const copyPrompt = async (content: string) => {
     const result = await copyToClipboard(content)
     
-    if (result.success) {
-      alert('¡Prompt copiado al portapapeles! 📋')
-    } else {
+    if (!result.success) {
       // Mostrar modal de copia manual
       showManualCopyModal(content)
     }
@@ -450,7 +448,6 @@ export default function HomePage() {
                     createdAt: new Date(prompt.createdAt)
                   }}
                   viewMode={viewMode}
-                  onCopy={() => copyPrompt(prompt.content)}
                   onShare={() => sharePrompt(prompt)}
                   onToggleFavorite={() => toggleFavorite(prompt.id)}
                 />

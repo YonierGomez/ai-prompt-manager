@@ -1,11 +1,15 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Share2, Copy, Twitter, Facebook, Linkedin, MessageCircle, Download, QrCode, X } from 'lucide-react'
+import { Share2, Copy, MessageCircle, Download, QrCode, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { copyToClipboard } from '@/lib/clipboard'
+import { XIcon } from '@/components/icons/XIcon'
+import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon'
+import { FacebookIcon } from '@/components/icons/FacebookIcon'
+import { LinkedInIcon } from '@/components/icons/LinkedInIcon'
 
 interface SharePromptProps {
   prompt: {
@@ -53,9 +57,7 @@ export function SharePrompt({ prompt, onClose }: SharePromptProps) {
   const handleCopyToClipboard = async (text: string) => {
     const result = await copyToClipboard(text)
     
-    if (result.success) {
-      alert('¡Copiado al portapapeles! 📋')
-    } else {
+    if (!result.success) {
       alert('Error al copiar al portapapeles. Por favor, selecciona y copia el texto manualmente.')
     }
   }
@@ -68,8 +70,8 @@ export function SharePrompt({ prompt, onClose }: SharePromptProps) {
     let url = ''
     
     switch (platform) {
-      case 'twitter':
-        url = `https://twitter.com/intent/tweet?text=${encodedText}`
+      case 'x':
+        url = `https://x.com/intent/tweet?text=${encodedText}`
         break
       case 'facebook':
         url = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodeURIComponent(prompt.title)}`
@@ -267,11 +269,11 @@ export function SharePrompt({ prompt, onClose }: SharePromptProps) {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => shareOnSocial('twitter')}
+                onClick={() => shareOnSocial('x')}
                 className="flex items-center justify-center gap-2 text-xs sm:text-sm p-3 sm:p-2"
               >
-                <Twitter className="h-4 w-4 text-blue-400 flex-shrink-0" />
-                <span className="truncate">Twitter</span>
+                <XIcon className="h-4 w-4 text-black dark:text-white flex-shrink-0" />
+                <span className="truncate">X</span>
               </Button>
               <Button
                 variant="outline"
@@ -279,7 +281,7 @@ export function SharePrompt({ prompt, onClose }: SharePromptProps) {
                 onClick={() => shareOnSocial('facebook')}
                 className="flex items-center justify-center gap-2 text-xs sm:text-sm p-3 sm:p-2"
               >
-                <Facebook className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                <FacebookIcon className="h-4 w-4 text-blue-600 flex-shrink-0" />
                 <span className="truncate">Facebook</span>
               </Button>
               <Button
@@ -288,7 +290,7 @@ export function SharePrompt({ prompt, onClose }: SharePromptProps) {
                 onClick={() => shareOnSocial('linkedin')}
                 className="flex items-center justify-center gap-2 text-xs sm:text-sm p-3 sm:p-2"
               >
-                <Linkedin className="h-4 w-4 text-blue-700 flex-shrink-0" />
+                <LinkedInIcon className="h-4 w-4 text-blue-700 flex-shrink-0" />
                 <span className="truncate">LinkedIn</span>
               </Button>
               <Button
@@ -297,7 +299,7 @@ export function SharePrompt({ prompt, onClose }: SharePromptProps) {
                 onClick={() => shareOnSocial('whatsapp')}
                 className="flex items-center justify-center gap-2 text-xs sm:text-sm p-3 sm:p-2"
               >
-                <MessageCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                <WhatsAppIcon className="h-4 w-4 text-green-500 flex-shrink-0" />
                 <span className="truncate">WhatsApp</span>
               </Button>
             </div>

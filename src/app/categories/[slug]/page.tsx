@@ -353,7 +353,6 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                     createdAt: new Date(prompt.createdAt)
                   }}
                   viewMode={viewMode}
-                  onCopy={() => copyPrompt(prompt.content)}
                   onShare={() => sharePrompt(prompt)}
                   onToggleFavorite={() => toggleFavorite(prompt.id)}
                 />

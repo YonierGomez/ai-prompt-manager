@@ -37,55 +37,69 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copying' | 'success' | 'error'>('idle')
 
   const handleCopy = async () => {
-    if (onCopy) return onCopy(prompt)
-    
     setCopyStatus('copying')
+    console.log('Iniciando copia...')
     
-    const result = await copyToClipboard(prompt.content)
-    
-    if (result.success) {
-      setCopyStatus('success')
-      
-      // Mostrar notificación de éxito
-      alert('¡Prompt copiado al portapapeles! 📋')
-      
-      // Registrar la ejecución/copia (solo si estamos en modo remoto)
-      const storageMode = localStorage.getItem('storage-mode') || 'local'
-      if (storageMode === 'remote') {
-        try {
-          await fetch(`/api/prompts/${prompt.id}/execute`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              promptId: prompt.id,
-              action: 'copy',
-              model: prompt.aiModel,
-              success: true
-            })
-          })
-        } catch (analyticsError) {
-          console.warn('No se pudo registrar la copia para analytics:', analyticsError)
-        }
+    try {
+      // Si hay un onCopy personalizado, usarlo pero mantener el feedback visual
+      if (onCopy) {
+        await onCopy(prompt)
+        setCopyStatus('success')
+        console.log('Copia exitosa con onCopy personalizado')
       } else {
-        // Para modo local, usar el storage local
-        try {
-          const { localPromptStorage } = await import('@/lib/local-storage')
-          localPromptStorage.incrementUsage(prompt.id)
-        } catch (localError) {
-          console.warn('No se pudo registrar la copia localmente:', localError)
+        // Usar la función de copia estándar
+        const result = await copyToClipboard(prompt.content)
+        
+        if (result.success) {
+          setCopyStatus('success')
+          console.log('Copia exitosa, mostrando estado success')
+          
+          // Registrar la ejecución/copia (solo si estamos en modo remoto)
+          const storageMode = localStorage.getItem('storage-mode') || 'local'
+          if (storageMode === 'remote') {
+            try {
+              await fetch(`/api/prompts/${prompt.id}/execute`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  promptId: prompt.id,
+                  action: 'copy',
+                  model: prompt.aiModel,
+                  success: true
+                })
+              })
+            } catch (analyticsError) {
+              console.warn('No se pudo registrar la copia para analytics:', analyticsError)
+            }
+          } else {
+            // Para modo local, usar el storage local
+            try {
+              const { localPromptStorage } = await import('@/lib/local-storage')
+              localPromptStorage.incrementUsage(prompt.id)
+            } catch (localError) {
+              console.warn('No se pudo registrar la copia localmente:', localError)
+            }
+          }
+        } else {
+          setCopyStatus('error')
+          console.log('Error en copia, mostrando modal manual')
+          
+          // Mostrar modal de copia manual
+          showManualCopyModal(prompt.content)
         }
       }
-    } else {
+    } catch (error) {
       setCopyStatus('error')
-      
-      // Mostrar modal de copia manual
-      showManualCopyModal(prompt.content)
+      console.log('Error en handleCopy:', error)
     }
     
-    // Resetear el estado después de 2 segundos
-    setTimeout(() => setCopyStatus('idle'), 2000)
+    // Resetear el estado después de 3 segundos
+    setTimeout(() => {
+      setCopyStatus('idle')
+      console.log('Resetendo estado a idle')
+    }, 3000)
   }
 
   const handleShare = async () => {
@@ -115,14 +129,12 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
       // Fallback para desktop/browsers sin soporte
       else { 
         await navigator.clipboard.writeText(shareData.url)
-        alert('🔗 Enlace copiado al portapapeles\n\nPuedes pegarlo en cualquier aplicación para compartir este prompt.')
       } 
     } catch (err) { 
       console.error('Error sharing:', err)
       // Último fallback - copiar al clipboard
       try {
         await navigator.clipboard.writeText(shareData.url)
-        alert('🔗 Enlace copiado al portapapeles')
       } catch (clipErr) {
         console.error('Error copying to clipboard:', clipErr)
         // Manual fallback
@@ -132,7 +144,6 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
         textArea.select()
         document.execCommand('copy')
         document.body.removeChild(textArea)
-        alert('🔗 Enlace copiado al portapapeles')
       }
     }
   }
@@ -311,19 +322,25 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
                   onClick={handleCopy}
                   disabled={copyStatus === 'copying'}
                   className={cn(
-                    'inline-flex items-center justify-center p-2 rounded-lg font-medium text-sm transition-all duration-200',
+                    'inline-flex items-center justify-center gap-1 p-2 rounded-lg font-medium text-sm transition-all duration-200',
                     copyStatus === 'success' 
-                      ? 'text-green-400 bg-green-500/20' 
+                      ? 'text-green-400 bg-green-500/20 border border-green-500/30' 
                       : copyStatus === 'error'
-                      ? 'text-red-400 bg-red-500/20'
+                      ? 'text-red-400 bg-red-500/20 border border-red-500/30'
                       : 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-300'
                   )}
                   aria-label={copyStatus === 'success' ? 'Copiado' : 'Copiar'}
                 >
                   {copyStatus === 'copying' ? (
-                    <ClientIcon Icon={Loader2} className="h-3 w-3 animate-spin" />
+                    <>
+                      <ClientIcon Icon={Loader2} className="h-3 w-3 animate-spin" />
+                      <span className="text-xs">Copiando...</span>
+                    </>
                   ) : copyStatus === 'success' ? (
-                    <ClientIcon Icon={Check} className="h-3 w-3" />
+                    <>
+                      <ClientIcon Icon={Check} className="h-3 w-3" />
+                      <span className="text-xs font-medium">Copiado</span>
+                    </>
                   ) : (
                     <ClientIcon Icon={Copy} className="h-3 w-3" />
                   )}
@@ -500,7 +517,7 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
                   <button 
                     onClick={handleCopy} 
                     disabled={copyStatus === 'copying'}
-                    className={`inline-flex items-center justify-center p-1.5 sm:p-2 rounded-lg font-medium text-sm transition-all duration-200 touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-[40px] sm:min-w-[40px] ${
+                    className={`inline-flex items-center justify-center gap-1 p-1.5 sm:p-2 rounded-lg font-medium text-sm transition-all duration-200 touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-[40px] sm:min-w-[40px] ${
                       copyStatus === 'success'
                         ? 'text-green-400 bg-green-500/20'
                         : copyStatus === 'error'
@@ -510,9 +527,15 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
                     aria-label={copyStatus === 'success' ? 'Copiado' : 'Copiar'}
                   >
                     {copyStatus === 'copying' ? (
-                      <ClientIcon Icon={Loader2} className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                      <>
+                        <ClientIcon Icon={Loader2} className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                        <span className="text-xs hidden sm:inline">Copiando...</span>
+                      </>
                     ) : copyStatus === 'success' ? (
-                      <ClientIcon Icon={Check} className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <>
+                        <ClientIcon Icon={Check} className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="text-xs hidden sm:inline">Copiado</span>
+                      </>
                     ) : (
                       <ClientIcon Icon={Copy} className="h-3 w-3 sm:h-4 sm:w-4" />
                     )}
@@ -707,7 +730,7 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
             <button 
               onClick={handleCopy} 
               disabled={copyStatus === 'copying'}
-              className={`inline-flex items-center justify-center p-1.5 sm:p-2 rounded-lg sm:rounded-xl font-medium text-sm transition-all duration-200 touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-[40px] sm:min-w-[40px] ${
+              className={`inline-flex items-center justify-center gap-1 p-1.5 sm:p-2 rounded-lg sm:rounded-xl font-medium text-sm transition-all duration-200 touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-[40px] sm:min-w-[40px] ${
                 copyStatus === 'success'
                   ? 'text-green-400 bg-green-500/20'
                   : copyStatus === 'error'
@@ -717,9 +740,15 @@ export function PromptCard({ prompt, viewMode, onCopy, onShare, onToggleFavorite
               aria-label={copyStatus === 'success' ? 'Copiado' : 'Copiar'}
             >
               {copyStatus === 'copying' ? (
-                <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                <>
+                  <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                  <span className="text-xs hidden sm:inline">Copiando...</span>
+                </>
               ) : copyStatus === 'success' ? (
-                <Check className="h-3 w-3 sm:h-4 sm:w-4" />
+                <>
+                  <Check className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="text-xs hidden sm:inline">Copiado</span>
+                </>
               ) : (
                 <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
               )}
