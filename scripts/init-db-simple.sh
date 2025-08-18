@@ -4,6 +4,7 @@ echo "🚀 Iniciando configuración de base de datos..."
 
 # Variables de entorno para Prisma - usando el directorio persistente
 export DATABASE_URL="file:./data/dev.db"
+export NODE_ENV="development"
 
 # Verificar si Prisma está disponible
 if ! command -v npx > /dev/null 2>&1; then
@@ -35,7 +36,7 @@ else
 fi
 
 echo "✅ Base de datos configurada correctamente"
-echo "🚀 Iniciando aplicación..."
+echo "🚀 Iniciando aplicación en modo desarrollo para evitar problemas de memoria..."
 
-# Iniciar la aplicación Next.js en modo producción
-exec npm start
+# Iniciar la aplicación Next.js en modo desarrollo (más eficiente en memoria)
+exec npm run dev

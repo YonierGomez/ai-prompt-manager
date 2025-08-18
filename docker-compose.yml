@@ -2,24 +2,33 @@ version: '3.8'
 
 services:
   ai-prompt-manager:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile.simple
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - DATABASE_URL=file:./data/dev.db
+      - NODE_OPTIONS=--max-old-space-size=1024
     volumes:
       # Volumen para la base de datos
       - ai_prompt_data:/app/data
       # Volumen para archivos de usuario (opcional, para futuras funcionalidades)
       - ai_prompt_uploads:/app/uploads
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+        reservations:
+          memory: 256M
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
 
 volumes:
   # Volumen nombrado para persistir la base de datos

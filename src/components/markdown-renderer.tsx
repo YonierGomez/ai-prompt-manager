@@ -7,8 +7,7 @@ import rehypeHighlight from 'rehype-highlight'
 import rehypeRaw from 'rehype-raw'
 import { cn } from '@/lib/utils'
 
-// Importar estilos de highlight.js
-import 'highlight.js/styles/github-dark.css'
+// Nota: Los estilos de highlight.js se cargan mediante CSS global
 
 interface MarkdownRendererProps {
   content: string
