@@ -2,10 +2,6 @@
 const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
-    // Optimizaciones adicionales para reducir uso de memoria
-    turbo: {
-      memoryLimit: 512,
-    },
   },
   output: 'standalone',
   images: {
