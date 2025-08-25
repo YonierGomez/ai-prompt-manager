@@ -1,5 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Permitir desarrollo desde IPs externas (por ejemplo, 192.168.1.100)
+  allowedDevOrigins: [
+    'http://localhost:3000',
+    'http://192.168.1.100:3000',
+    // Agrega aquí otras IPs o dominios que uses en desarrollo
+  ],
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
