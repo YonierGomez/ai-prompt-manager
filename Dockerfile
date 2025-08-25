@@ -9,16 +9,14 @@ WORKDIR /app
 COPY package*.json ./
 COPY . .
 
-
-
 # Instalar dependencias
 RUN npm install --silent --no-warnings
 
 # Generar Prisma client
 RUN npx prisma generate
 
-# Copiar el build generado localmente
-COPY .next .next
+# Build de Next.js para producción
+RUN NODE_OPTIONS=--max-old-space-size=2048 npm run build
 
 # Crear directorio de datos
 RUN mkdir -p data
