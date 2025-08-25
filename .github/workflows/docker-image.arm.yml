@@ -1,4 +1,4 @@
-name: Docker Image CI ARM - Emby Server
+name: Docker Image AI PROMT MANAGER ARM
 
 on:
   workflow_dispatch: # Agrega esta entrada para habilitar la ejecución manual
