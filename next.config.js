@@ -37,7 +37,6 @@ const nextConfig = {
     return config;
   },
   // Configurar el compilador SWC para usar menos memoria
-  swcMinify: true,
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },

@@ -1,0 +1,38 @@
+# Dockerfile ultra-simple - evita build de producción
+FROM node:18-alpine
+
+RUN apk add --no-cache sqlite
+
+WORKDIR /app
+
+# Copiar todo el proyecto
+COPY package*.json ./
+COPY . .
+
+# Instalar dependencias completas (dev + prod) para poder usar modo desarrollo
+RUN npm install
+
+# Generar Prisma client  
+RUN npx prisma generate
+
+# Crear directorio de datos
+RUN mkdir -p data
+
+EXPOSE 3000
+
+# Variables de entorno para desarrollo
+ENV NODE_ENV=development
+ENV DATABASE_URL="file:./data/dev.db"
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Script de inicio simple
+RUN echo '#!/bin/sh\n\
+echo "🚀 Inicializando base de datos si es necesario..."\n\
+if [ ! -f "data/dev.db" ]; then\n\
+  npx prisma db push --force-reset\n\
+  npx tsx prisma/seed.ts || echo "Seed opcional falló, continuando..."\n\
+fi\n\
+echo "🚀 Iniciando en modo desarrollo..."\n\
+exec npm run dev' > /app/start.sh && chmod +x /app/start.sh
+
+CMD ["/app/start.sh"]

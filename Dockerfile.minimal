@@ -1,0 +1,42 @@
+# Dockerfile minimal - usa build local
+FROM node:18-alpine AS base
+
+# Instalar dependencias del sistema
+RUN apk add --no-cache libc6-compat sqlite
+
+# Crear usuario no-root
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+WORKDIR /app
+
+# Copiar package.json y lock
+COPY package*.json ./
+
+# Instalar solo dependencias de producción
+RUN npm ci --only=production && npm cache clean --force
+
+# Copiar build local (debe existir .next/)
+COPY --chown=nextjs:nodejs .next/standalone ./
+COPY --chown=nextjs:nodejs .next/static ./.next/static
+COPY --chown=nextjs:nodejs public ./public
+
+# Copiar schema de Prisma
+COPY --chown=nextjs:nodejs prisma ./prisma
+
+# Crear directorio de datos
+RUN mkdir -p data && chown -R nextjs:nodejs data
+
+# Generar cliente de Prisma
+RUN npx prisma generate
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT 3000
+ENV NODE_ENV production
+ENV HOSTNAME "0.0.0.0"
+
+# Comando de inicio
+CMD ["node", "server.js"]

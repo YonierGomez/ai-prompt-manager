@@ -1,0 +1,58 @@
+# Multi-stage build optimizado para tamaño mínimo
+FROM node:22-alpine AS base
+RUN apk add --no-cache libc6-compat openssl sqlite
+WORKDIR /app
+
+# Stage 1: Install dependencies
+FROM base AS deps
+COPY package*.json ./
+RUN npm ci --only=production --no-audit --no-fund && \
+    npm cache clean --force
+
+# Stage 2: Build application
+FROM base AS builder
+COPY package*.json ./
+RUN npm ci --no-audit --no-fund
+COPY . .
+COPY prisma ./prisma
+
+# Build
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+RUN npx prisma generate && \
+    npm run build && \
+    npm prune --production
+
+# Stage 3: Production image
+FROM node:22-alpine AS runner
+RUN apk add --no-cache sqlite
+
+WORKDIR /app
+
+# Create nextjs user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Set environment
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Copy only necessary files
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/scripts/init-db-simple.sh ./scripts/init-db-simple.sh
+
+# Set permissions
+RUN mkdir -p ./data && \
+    chmod +x ./scripts/init-db-simple.sh && \
+    chown -R nextjs:nodejs ./data ./prisma
+
+USER nextjs
+
+EXPOSE 3000
+
+CMD ["./scripts/init-db-simple.sh"]
