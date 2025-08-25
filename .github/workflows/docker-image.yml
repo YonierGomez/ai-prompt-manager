@@ -28,12 +28,12 @@ jobs:
     
     - name: Build and push the Docker image latest
       run: |
-        docker build . --file Dockerfile --tag neytor/emby-neytor && 
-        docker image ls && docker push neytor/emby-neytor
+        docker build . --file Dockerfile --tag neytor/ai-prompt-manager && 
+        docker image ls && docker push neytor/ai-prompt-manager
 
     - name: Build and push the Docker image with tag
       run: |
-        docker build . --file Dockerfile --tag neytor/emby-neytor:4.8.11.0 && \
-        docker image ls && docker push neytor/emby-neytor:4.8.11.0
+        docker build . --file Dockerfile --tag neytor/ai-prompt-manager:v3 && \
+        docker image ls && docker push neytor/ai-prompt-manager:v3
       
     
