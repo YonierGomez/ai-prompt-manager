@@ -1,11 +1,12 @@
-# Dockerfile ultra-optimizado y funcional
-FROM node:18-alpine
+# Dockerfile simplificado para evitar problemas de memoria
+FROM node:24-alpine
 
+# Instalar dependencias del sistema
 RUN apk add --no-cache sqlite
 
 WORKDIR /app
 
-# Copiar archivos esenciales
+# Copiar archivos del proyecto
 COPY package*.json ./
 COPY . .
 
@@ -15,16 +16,19 @@ RUN npm install --silent --no-warnings
 # Generar Prisma client
 RUN npx prisma generate
 
-# Build de Next.js para producción
-RUN NODE_OPTIONS=--max-old-space-size=2048 npm run build
-
 # Crear directorio de datos
-RUN mkdir -p data
+RUN mkdir -p data uploads
 
 EXPOSE 3000
 
-# Copiar y dar permisos al script de inicio
-COPY start.sh /app/start.sh
-RUN chmod +x /app/start.sh
+# Variables de entorno
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
-CMD ["/app/start.sh"]
+# Copiar y dar permisos al script de inicio
+COPY start.sh ./start.sh
+RUN chmod +x ./start.sh
+
+CMD ["./start.sh"]
