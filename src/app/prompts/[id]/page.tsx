@@ -430,40 +430,54 @@ export default function PromptDetailPage() {
               <CardTitle className="text-lg text-white">Estadísticas</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-sm text-slate-400">
-                  <Star className="h-4 w-4" />
-                  Usos
-                </span>
-                <span className="font-semibold text-white">{prompt.usageCount}</span>
+              <div className="flex items-center justify-between py-2">
+                <div className="flex items-center gap-2">
+                  <Star className="h-4 w-4 text-purple-400" />
+                  <span className="text-sm text-slate-400">Usos</span>
+                </div>
+                <span className="text-lg font-semibold text-white">{prompt.usageCount}</span>
               </div>
               
-              <div className="space-y-2">
-                <span className="flex items-center gap-2 text-sm text-slate-400">
-                  <Calendar className="h-4 w-4" />
-                  Creado
-                </span>
-                <div className="text-sm text-slate-300 leading-tight">
+              <div className="border-t border-slate-700/50 pt-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar className="h-4 w-4 text-blue-400" />
+                  <span className="text-sm text-slate-400">Creado</span>
+                </div>
+                <p className="text-sm text-slate-200 ml-6">
                   {formatDate(prompt.createdAt)}
-                </div>
+                </p>
               </div>
               
-              <div className="space-y-2">
-                <span className="flex items-center gap-2 text-sm text-slate-400">
-                  <Cpu className="h-4 w-4" />
-                  Modelo
-                </span>
-                <div className="text-sm text-slate-300 leading-tight break-words">
+              <div className="border-t border-slate-700/50 pt-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Cpu className="h-4 w-4 text-green-400" />
+                  <span className="text-sm text-slate-400">Modelo</span>
+                </div>
+                <p className="text-sm text-slate-200 ml-6 break-words">
                   {aiModelInfo?.label || prompt.aiModel}
-                </div>
+                </p>
               </div>
               
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-sm text-slate-400">
-                  <Tag className="h-4 w-4" />
-                  Tags
-                </span>
-                <span className="font-semibold text-white">{prompt.tags.length}</span>
+              <div className="border-t border-slate-700/50 pt-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Tag className="h-4 w-4 text-orange-400" />
+                    <span className="text-sm text-slate-400">Tags</span>
+                  </div>
+                  <span className="text-sm font-semibold text-white">{prompt.tags.length}</span>
+                </div>
+                {prompt.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2 ml-6">
+                    {prompt.tags.map((tag) => (
+                      <span 
+                        key={tag} 
+                        className="inline-block px-2 py-1 bg-slate-700/50 text-xs text-slate-300 rounded"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
