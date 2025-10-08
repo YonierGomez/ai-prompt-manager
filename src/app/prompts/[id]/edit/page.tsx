@@ -148,9 +148,9 @@ export default function EditPromptPage() {
       setPrompt(updatedPrompt)
       setSuccess(true)
       
-      // Redirigir después de un breve delay
+      // Redirigir después de un breve delay con timestamp para forzar recarga
       setTimeout(() => {
-        router.push(`/prompts/${params.id}`)
+        router.replace(`/prompts/${params.id}?refresh=${Date.now()}`)
       }, 1500)
       
     } catch (err) {

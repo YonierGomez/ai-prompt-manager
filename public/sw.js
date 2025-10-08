@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ai-prompt-manager-v1'
+const CACHE_NAME = 'ai-prompt-manager-v2'
 const STATIC_CACHE_URLS = [
   '/',
   '/new',
@@ -42,33 +42,45 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  // Skip caching for development and API routes
+  const url = new URL(event.request.url)
+  if (url.hostname === 'localhost' || url.pathname.startsWith('/api/')) {
+    return fetch(event.request)
+  }
+
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request)
-          .then((fetchResponse) => {
-            // Don't cache non-successful responses
-            if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
-              return fetchResponse
-            }
+    // Always try network first for fresh content
+    fetch(event.request)
+      .then((fetchResponse) => {
+        // Don't cache non-successful responses
+        if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
+          return fetchResponse
+        }
 
-            // Clone the response
-            const responseToCache = fetchResponse.clone()
+        // Only cache static assets, not dynamic pages
+        if (STATIC_CACHE_URLS.includes(url.pathname) || 
+            url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2)$/)) {
+          const responseToCache = fetchResponse.clone()
+          caches.open(CACHE_NAME)
+            .then((cache) => {
+              cache.put(event.request, responseToCache)
+            })
+        }
 
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache)
-              })
-
-            return fetchResponse
-          })
+        return fetchResponse
       })
       .catch(() => {
-        // Return offline page if available
-        if (event.request.destination === 'document') {
-          return caches.match('/')
-        }
+        // Fallback to cache only if network fails
+        return caches.match(event.request)
+          .then((response) => {
+            if (response) {
+              return response
+            }
+            // Return offline page if available
+            if (event.request.destination === 'document') {
+              return caches.match('/')
+            }
+          })
       })
   )
 })

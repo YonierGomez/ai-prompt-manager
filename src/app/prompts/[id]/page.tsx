@@ -438,20 +438,24 @@ export default function PromptDetailPage() {
                 <span className="font-semibold text-white">{prompt.usageCount}</span>
               </div>
               
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <span className="flex items-center gap-2 text-sm text-slate-400">
                   <Calendar className="h-4 w-4" />
                   Creado
                 </span>
-                <span className="text-sm text-slate-300 block pl-6">{formatDate(prompt.createdAt)}</span>
+                <div className="text-sm text-slate-300 leading-tight">
+                  {formatDate(prompt.createdAt)}
+                </div>
               </div>
               
-              <div className="flex items-center justify-between">
+              <div className="space-y-2">
                 <span className="flex items-center gap-2 text-sm text-slate-400">
                   <Cpu className="h-4 w-4" />
                   Modelo
                 </span>
-                <span className="text-sm text-slate-300">{aiModelInfo?.label || prompt.aiModel}</span>
+                <div className="text-sm text-slate-300 leading-tight break-words">
+                  {aiModelInfo?.label || prompt.aiModel}
+                </div>
               </div>
               
               <div className="flex items-center justify-between">
@@ -459,7 +463,7 @@ export default function PromptDetailPage() {
                   <Tag className="h-4 w-4" />
                   Tags
                 </span>
-                <span className="text-sm text-slate-300">{prompt.tags.length}</span>
+                <span className="font-semibold text-white">{prompt.tags.length}</span>
               </div>
             </CardContent>
           </Card>

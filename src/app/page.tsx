@@ -81,6 +81,27 @@ export default function HomePage() {
     fetchPrompts()
   }, [])
 
+  // Refrescar datos cuando la página se vuelve visible (regresa de otra página)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchPrompts()
+      }
+    }
+
+    const handleFocus = () => {
+      fetchPrompts()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [])
+
   // Aplicar filtros cuando cambien
   useEffect(() => {
     applyFilters()

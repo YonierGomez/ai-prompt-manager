@@ -170,7 +170,8 @@ function NewPromptForm() {
       const newPrompt = await response.json()
       console.log('Prompt created successfully:', newPrompt)
       
-      router.push('/')
+      // Usar replace con timestamp para forzar recarga
+      router.replace(`/?refresh=${Date.now()}`)
     } catch (error) {
       console.error('Error creating prompt:', error)
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido'

@@ -13,6 +13,39 @@ const nextConfig = {
   images: {
     domains: [],
   },
+  // Configuración para evitar problemas de caché en desarrollo
+  headers: async () => {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: process.env.NODE_ENV === 'development' 
+              ? 'no-cache, no-store, must-revalidate' 
+              : 'public, max-age=31536000, immutable',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
+          },
+        ],
+      },
+      {
+        source: '/api/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+        ],
+      },
+    ]
+  },
   // Configuraciones para reducir el uso de memoria durante el build
   webpack: (config, { isServer }) => {
     // Optimizar el bundle para usar menos memoria
