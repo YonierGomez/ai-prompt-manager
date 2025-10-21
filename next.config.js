@@ -13,7 +13,7 @@ const nextConfig = {
   images: {
     domains: [],
   },
-  // Configuración para evitar problemas de caché en desarrollo
+  // Configuración para evitar problemas de caché completamente
   headers: async () => {
     return [
       {
@@ -21,9 +21,32 @@ const nextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: process.env.NODE_ENV === 'development' 
-              ? 'no-cache, no-store, must-revalidate' 
-              : 'public, max-age=31536000, immutable',
+            value: 'no-cache, no-store, must-revalidate, max-age=0',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+        ],
+      },
+      {
+        source: '/api/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate, max-age=0',
           },
           {
             key: 'Pragma',
@@ -36,11 +59,11 @@ const nextConfig = {
         ],
       },
       {
-        source: '/api/(.*)',
+        source: '/_next/static/(.*)',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'no-cache, no-store, must-revalidate',
+            value: 'no-cache, no-store, must-revalidate, max-age=0',
           },
         ],
       },

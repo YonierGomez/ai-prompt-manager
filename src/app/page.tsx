@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { SearchAndFilters } from '@/components/search-and-filters'
 import { SharePrompt } from '@/components/share-prompt'
 import { copyToClipboard, showManualCopyModal } from '@/lib/clipboard'
+import { useSearchParams } from 'next/navigation'
 import { 
   Heart, 
   Copy, 
@@ -64,6 +65,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const searchParams = useSearchParams()
   const [filters, setFilters] = useState<FilterOptions>({
     categories: [],
     models: [],
@@ -79,6 +81,27 @@ export default function HomePage() {
   // Cargar prompts desde la API
   useEffect(() => {
     fetchPrompts()
+  }, [])
+
+  // Manejar búsqueda desde URL parameters
+  useEffect(() => {
+    const searchFromUrl = searchParams.get('search')
+    if (searchFromUrl) {
+      setSearchQuery(decodeURIComponent(searchFromUrl))
+    }
+  }, [searchParams])
+
+  // Escuchar eventos de búsqueda desde la navbar
+  useEffect(() => {
+    const handleNavbarSearch = (event: CustomEvent) => {
+      setSearchQuery(event.detail.query)
+    }
+
+    window.addEventListener('navbar-search', handleNavbarSearch as EventListener)
+    
+    return () => {
+      window.removeEventListener('navbar-search', handleNavbarSearch as EventListener)
+    }
   }, [])
 
   // Refrescar datos cuando la página se vuelve visible (regresa de otra página)
@@ -398,6 +421,7 @@ export default function HomePage() {
           onSearch={handleSearch}
           onFilter={handleFilter}
           className=""
+          initialSearchQuery={searchQuery}
         />
       </motion.section>
 

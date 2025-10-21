@@ -35,53 +35,35 @@ self.addEventListener('activate', (event) => {
   )
 })
 
-// Fetch event
+// Fetch event - Deshabilitado completamente el caché
 self.addEventListener('fetch', (event) => {
-  // Only cache GET requests
+  // Solo manejar requests GET
   if (event.request.method !== 'GET') {
     return
   }
 
-  // Skip caching for development and API routes
   const url = new URL(event.request.url)
-  if (url.hostname === 'localhost' || url.pathname.startsWith('/api/')) {
-    return fetch(event.request)
-  }
-
+  
+  // Siempre ir a la red, nunca usar caché
   event.respondWith(
-    // Always try network first for fresh content
-    fetch(event.request)
-      .then((fetchResponse) => {
-        // Don't cache non-successful responses
-        if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
-          return fetchResponse
-        }
-
-        // Only cache static assets, not dynamic pages
-        if (STATIC_CACHE_URLS.includes(url.pathname) || 
-            url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2)$/)) {
-          const responseToCache = fetchResponse.clone()
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache)
-            })
-        }
-
-        return fetchResponse
-      })
-      .catch(() => {
-        // Fallback to cache only if network fails
-        return caches.match(event.request)
-          .then((response) => {
-            if (response) {
-              return response
-            }
-            // Return offline page if available
-            if (event.request.destination === 'document') {
-              return caches.match('/')
-            }
-          })
-      })
+    fetch(event.request, {
+      cache: 'no-store',
+      headers: {
+        ...event.request.headers,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    }).catch(() => {
+      // Solo en caso de error de red, intentar caché como último recurso
+      if (event.request.destination === 'document') {
+        return new Response(
+          '<!DOCTYPE html><html><head><title>Sin conexión</title></head><body><h1>Sin conexión a internet</h1><p>Por favor, verifica tu conexión e intenta de nuevo.</p></body></html>',
+          { headers: { 'Content-Type': 'text/html' } }
+        )
+      }
+      return new Response('Sin conexión', { status: 503 })
+    })
   )
 })
 

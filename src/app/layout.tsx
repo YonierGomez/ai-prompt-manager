@@ -117,20 +117,47 @@ export default function RootLayout({
             <Toaster />
           </div>
         </ThemeProvider>
+        {/* Scripts anti-caché */}
+        <script src="/clear-cache.js" async />
+        <script src="/force-refresh.js" async />
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              // Configuración anti-caché mejorada
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                      console.log('SW registered: ', registration);
-                    })
-                    .catch(function(registrationError) {
-                      console.log('SW registration failed: ', registrationError);
+                  // Primero limpiar cachés existentes
+                  caches.keys().then(function(cacheNames) {
+                    return Promise.all(
+                      cacheNames.map(function(cacheName) {
+                        return caches.delete(cacheName);
+                      })
+                    );
+                  }).then(function() {
+                    // Luego registrar el service worker
+                    return navigator.serviceWorker.register('/sw.js', {
+                      updateViaCache: 'none'
                     });
+                  }).then(function(registration) {
+                    console.log('SW registered: ', registration);
+                    // Forzar actualización inmediata
+                    registration.update();
+                  }).catch(function(registrationError) {
+                    console.log('SW registration failed: ', registrationError);
+                  });
                 });
               }
+              
+              // Interceptar navegación del navegador para forzar recarga
+              window.addEventListener('beforeunload', function() {
+                if ('serviceWorker' in navigator) {
+                  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    registrations.forEach(function(registration) {
+                      registration.unregister();
+                    });
+                  });
+                }
+              });
             `,
           }}
         />

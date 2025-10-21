@@ -12,6 +12,7 @@ interface SearchAndFiltersProps {
   onSearch: (query: string) => void
   onFilter: (filters: FilterOptions) => void
   className?: string
+  initialSearchQuery?: string
 }
 
 interface FilterOptions {
@@ -28,8 +29,8 @@ const DATE_RANGES = [
   { value: 'year', label: 'Último año' }
 ]
 
-export function SearchAndFilters({ onSearch, onFilter, className }: SearchAndFiltersProps) {
-  const [searchQuery, setSearchQuery] = useState('')
+export function SearchAndFilters({ onSearch, onFilter, className, initialSearchQuery = '' }: SearchAndFiltersProps) {
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery)
   const [showFilters, setShowFilters] = useState(false)
   const [availableCategories, setAvailableCategories] = useState<string[]>([])
   const [availableModels, setAvailableModels] = useState<string[]>([])
@@ -39,6 +40,13 @@ export function SearchAndFilters({ onSearch, onFilter, className }: SearchAndFil
     favorites: false,
     dateRange: 'all'
   })
+
+  // Sincronizar con el query inicial
+  useEffect(() => {
+    if (initialSearchQuery !== searchQuery) {
+      setSearchQuery(initialSearchQuery)
+    }
+  }, [initialSearchQuery])
 
   // Cargar categorías y modelos reales desde la API
   useEffect(() => {
